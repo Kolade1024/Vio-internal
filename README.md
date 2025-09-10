@@ -1,6 +1,6 @@
-# OYRTMA Traffic Management Platform
+# VIS Traffic Management Platform
 
-A production-ready React + Vite project for Oyo State Road Traffic Management Authority (OYRTMA).
+A production-ready React + Vite project for Oyo State Vehicle Inspection Service (VIS).
 
 ## Features
 

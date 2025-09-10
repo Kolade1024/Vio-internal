@@ -38,7 +38,7 @@ export interface CreateTicketPayload {
 export const SearchTickets = () => {
     return useMutation({
       mutationFn: async (data: any) => {
-        const res = await Api.post(`v1/oyrtma/tickets/search`, data)
+        const res = await Api.post(`v1/tickets/search`, data)
         return res.data
       },
     })
@@ -47,7 +47,7 @@ export const SearchTickets = () => {
 export const CreateTicket = () => {
     return useMutation({
       mutationFn: async (data: CreateTicketPayload) => {
-        const res = await Api.post(`v1/oyrtma/tickets`, data)
+        const res = await Api.post(`v1/tickets`, data)
         return res.data
       },
     })
@@ -62,7 +62,7 @@ export const CreateTicket = () => {
   export const CreateCommand = () => {
       return useMutation({
         mutationFn: async (data: CommandPayload) => {
-          const res = await Api.post(`v1/oyrtma/commands`, data)
+          const res = await Api.post(`v1/commands`, data)
           return res.data
         },
       })
@@ -71,7 +71,7 @@ export const CreateTicket = () => {
   export const UpdateCommand = (id: string) => {
       return useMutation({
         mutationFn: async (data: CommandPayload) => {
-          const res = await Api.put(`v1/oyrtma/commands/${id}`, data)
+          const res = await Api.put(`v1/commands/${id}`, data)
           return res.data
         },
       })
@@ -80,7 +80,7 @@ export const CreateTicket = () => {
   export const DeleteCommand = () => {
       return useMutation({
         mutationFn: async (id: string) => {
-          const res = await Api.delete(`v1/oyrtma/commands/${id}`)
+          const res = await Api.delete(`v1/commands/${id}`)
           return res.data
         },
       })
@@ -94,7 +94,7 @@ export const CreateTicket = () => {
   export const CreateCommandUnits = () => {
       return useMutation({
         mutationFn: async (data: CommandUnitPayload) => {
-          const res = await Api.post(`v1/oyrtma/command-units`, data)
+          const res = await Api.post(`v1/command-units`, data)
           return res.data
         },
       })
@@ -103,7 +103,7 @@ export const CreateTicket = () => {
   export const UpdateCommandUnit = (id: string) => {
       return useMutation({
         mutationFn: async (data: CommandUnitPayload) => {
-          const res = await Api.put(`v1/oyrtma/command-units/${id}`, data)
+          const res = await Api.put(`v1/command-units/${id}`, data)
           return res.data
         },
       })
@@ -112,7 +112,7 @@ export const CreateTicket = () => {
   export const DeleteCommandUnit = () => {
       return useMutation({
         mutationFn: async (id: string) => {
-          const res = await Api.delete(`v1/oyrtma/command-units/${id}`)
+          const res = await Api.delete(`v1/command-units/${id}`)
           return res.data
         },
       })
@@ -122,7 +122,7 @@ export const CreateTicket = () => {
 export const SearchOffenders = () => {
   return useMutation({
     mutationFn: async (data: any) => {
-      const res = await Api.post(`v1/oyrtma/offenders/search`, data)
+      const res = await Api.post(`v1/offenders/search`, data)
       return res.data
     },
   })
@@ -141,7 +141,7 @@ export interface VehiclePayload {
 export const SearchVehicle = () => {
   return useMutation({
     mutationFn: async (data: any) => {
-      const res = await Api.post(`v1/oyrtma/vehicles/search`, data)
+      const res = await Api.post(`v1/vehicles/search`, data)
       return res.data
     },
   })

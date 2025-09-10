@@ -61,7 +61,7 @@ export default function Login() {
             className="h-20 w-20 mb-2"
             style={{ objectFit: 'contain' }}
           />
-          <h2 className="text-2xl font-bold text-center">Oyo State Road Traffic Management Authority</h2>
+          <h2 className="text-2xl font-bold text-center">Oyo State Vehicle Inspection Service</h2>
           <span className="text-lg font-semibold text-[#700002] mt-2">Sign In</span>
         </div>
         {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}

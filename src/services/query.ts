@@ -86,7 +86,7 @@ export const getDashboardStats = (params: DashboardStatsParams = {}) => {
       params.dateRangeType,
     ],
     queryFn: async () => {
-      const res = await Api.get('v1/oyrtma/dashboard', {
+      const res = await Api.get('v1/dashboard', {
         params: {
           ...(params.userId && { userId: params.userId }),
           ...(params.startDate && { startDate: params.startDate }),
@@ -105,7 +105,7 @@ export const getOffences = () => {
   return useQuery<OffencesType[]>({
     queryKey: ['offences'], 
     queryFn: async () => {
-      const res = await Api.get(`v1/oyrtma/offences`)
+      const res = await Api.get(`v1/offences`)
       return res.data
     },
   })
@@ -137,7 +137,7 @@ export const getCommands = () => {
   return useQuery<CommandType[]> ({
     queryKey: ['commands'],
     queryFn: async () => {
-      const res = await Api.get(`v1/oyrtma/commands`)
+      const res = await Api.get(`v1/commands`)
       return res.data
     },
   });
@@ -147,7 +147,7 @@ export const getCommandUnits = (commandId?: string) => {
   return useQuery<CommandUnitType[]> ({
     queryKey: ['commandUnits', commandId],
     queryFn: async () => {
-      const res = await Api.get(`v1/oyrtma/command-units${commandId ? `?commandId=${commandId}` : ''}`)
+      const res = await Api.get(`v1/command-units${commandId ? `?commandId=${commandId}` : ''}`)
       return res.data
     },
     // enabled: !!commandId, // Only fetch if commandId is available
@@ -158,7 +158,7 @@ export const getTickets = () => {
     return useQuery({
       queryKey: ['ticket'], 
       queryFn: async () => {
-        const res = await Api.get(`v1/oyrtma/tickets`)
+        const res = await Api.get(`v1/tickets`)
         return res.data
       },
     })
@@ -170,7 +170,7 @@ export const getComplaints = () => {
   return useQuery({
     queryKey: ['complaints'],
     queryFn: async () => {
-      const res = await Api.get(`v1/oyrtma/complaints/complaints`)
+      const res = await Api.get(`v1/complaints/complaints`)
       return res.data
     }
   })
@@ -181,7 +181,7 @@ export const getVehicleOwners = () => {
   return useQuery({
     queryKey: ['vehicle-owners'],
     queryFn: async () => {
-      const res = await Api.get(`v1/oyrtma/vehicle-owners`)
+      const res = await Api.get(`v1/vehicle-owners`)
       return res.data
     }
   })
