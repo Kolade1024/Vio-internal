@@ -42,6 +42,8 @@ import { getProfile } from '@/services/query'
 import { useEffect } from 'react'
 import Loading from './Loading'
 
+import logo from "../assets/images/oyo-logo.png"
+
 export default function Layout() {
   const [user, setUser] = useState(Auth.getUser())
   // const [date, setDate] = useState<Date | undefined>(new Date())
@@ -103,7 +105,7 @@ export default function Layout() {
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-[60px] items-center border-b px-6">
             <Link className="flex items-center gap-2 font-semibold" to="/">
-              <img src="/src/assets/images/oyo-logo.png" alt="VIO Logo" className="h-8 w-8" />
+              <img src={logo} alt="VIO Logo" className="h-8 w-8" />
               <span>VIO</span>
             </Link>
             <Button className="ml-auto h-8 w-8" size="icon" variant="outline">
