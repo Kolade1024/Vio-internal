@@ -146,8 +146,8 @@ export default function Layout() {
             </SheetTrigger>
             <SheetContent side="left">
               <Link className="flex items-center gap-2 font-semibold mb-4" to="/">
-                <img src="/src/assets/images/oyo-logo.png" alt="OYRTMA Logo" className="h-8 w-8" />
-                <span>OYRTMA</span>
+                <img src={logo} alt="VIO Logo" className="h-8 w-8" />
+                <span>VIO</span>
               </Link>
               <ScrollArea className="grid gap-2 text-lg font-medium h-full w-full pr-4 overflow-y-auto">
                 {navItems.map((section, sectionIndex) => (
