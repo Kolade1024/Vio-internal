@@ -6,9 +6,10 @@ import { Button } from '../components/ui/button'
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
 import type { TicketByDayOfWeek, RevenueByDay, UserStat, TopOffence, TopOffender } from '@/services/query'
-import { getDashboardStats } from '@/services/query'
+import { getDashboardStats, getUsers } from '@/services/query'
 
 import { ComponentLoading } from '@/components/Loading'
+import { useState } from 'react'
 
 interface FormattedUserStat {
   command: string;
@@ -30,7 +31,13 @@ interface FormattedTopOffender {
 }
 
 export default function Dashboard() {
-  const { data, isLoading } = getDashboardStats();
+  const [dateRange, setDateRange] = useState('Today');
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+
+  const { data, isLoading } = getDashboardStats({ dateRangeType: dateRange, startDate, endDate, userId: currentUser! });
+  const { data: usersData, isLoading: usersLoading } = getUsers();
 
   if (isLoading) {
     return <ComponentLoading />
@@ -68,6 +75,47 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex-1"></div>
+        <div className="flex items-center gap-3">
+          <select
+            className="w-[300px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
+            value={currentUser || ""}
+            onChange={e => setCurrentUser(e.target.value || null)}
+          >
+            <option value="">{usersLoading ? "Loading..." : "All Users"}</option>
+            {usersData && usersData.map((user: any) => (
+              <option key={user.id} value={user.id}>{user.firstName} {user.lastName}</option>
+            ))}
+          </select>
+          {
+            dateRange === 'Custom' && (
+              <>
+                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="border border-gray-300 rounded-md p-2" />
+                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="border border-gray-300 rounded-md p-2" />
+              </>
+            )}
+        <select
+            className="w-[300px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
+            value={dateRange}
+            onChange={e => setDateRange(e.target.value)}
+          >
+            <option value="Today">Today</option>
+            <option value="Yesterday">Yesterday</option>
+            <option value="Weekly">This Week</option>
+            <option value="Monthly">This Month</option>
+            <option value="Quarterly">Quarter</option>
+            <option value="Annually">Annually</option>
+            <option value="Biannually">Biannually</option>
+            <option value="Custom">Custom</option>
+          </select>
+            {
+              dateRange === 'Custom' && (
+                <button onClick={() => { setStartDate(""); setEndDate(""); setDateRange("Today"); }}>Reset</button>
+              )
+            }
+          </div>
+        </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {[ // These values will now be dynamic from the API response
           {

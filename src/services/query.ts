@@ -186,3 +186,15 @@ export const getVehicleOwners = () => {
     }
   })
 }
+
+
+// Users
+export const getUsers = () => {
+  return useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const res = await Api.get(`users`)
+      return res.data
+    }
+  })
+}
