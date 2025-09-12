@@ -18,6 +18,41 @@ export interface TicketByDayOfWeek {
   ticketCount: number;
 }
 
+// Payments - Queries
+export interface Payment {
+  id: string;
+  ticketId?: string;
+  reference?: string;
+  amount: number;
+  currency?: string;
+  status: string;
+  channel?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export const getPaymentById = (id?: string) => {
+  return useQuery<Payment>({
+    queryKey: ['payment', id],
+    queryFn: async () => {
+      const res = await Api.get(`v1/payments/${id}`)
+      return res.data
+    },
+    enabled: !!id,
+  })
+}
+
+export const getPaymentByTicketId = (ticketId?: string) => {
+  return useQuery<Payment>({
+    queryKey: ['payment-ticket', ticketId],
+    queryFn: async () => {
+      const res = await Api.get(`v1/payments/ticket/${ticketId}`)
+      return res.data
+    },
+    enabled: !!ticketId,
+  })
+}
+
 export interface RevenueByDay {
   day: string;
   totalRevenue: number;

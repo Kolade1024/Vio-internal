@@ -146,3 +146,118 @@ export const SearchVehicle = () => {
     },
   })
 }
+
+// Payments
+export interface InitiatePaymentPayload {
+  ticketId: string;
+  amount: number;
+  channel?: string;
+  callbackUrl?: string;
+}
+
+export interface VerifyPaymentPayload {
+  reference: string;
+}
+
+export interface CreatePaymentPayload {
+  ticketId: string;
+  amount: number;
+  status?: string;
+  reference?: string;
+  channel?: string;
+}
+
+export interface GeneratePaymentReportPayload {
+  startDate?: string;
+  endDate?: string;
+  status?: string;
+}
+
+export interface SearchPaymentsPayload {
+  query?: string; // ticketId or reference
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export const InitiatePayment = () => {
+  return useMutation({
+    mutationFn: async (data: InitiatePaymentPayload) => {
+      const res = await Api.post(`v1/payments/initiate`, data)
+      return res.data
+    },
+  })
+}
+
+export const VerifyPayment = () => {
+  return useMutation({
+    mutationFn: async (data: VerifyPaymentPayload) => {
+      const res = await Api.post(`v1/payments/verify`, data)
+      return res.data
+    },
+  })
+}
+
+export const PaymentWebhook = () => {
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const res = await Api.post(`v1/payments/webhook`, data)
+      return res.data
+    },
+  })
+}
+
+export const CreatePayment = () => {
+  return useMutation({
+    mutationFn: async (data: CreatePaymentPayload) => {
+      const res = await Api.post(`v1/payments`, data)
+      return res.data
+    },
+  })
+}
+
+export const GeneratePaymentReport = () => {
+  return useMutation({
+    mutationFn: async (data: GeneratePaymentReportPayload) => {
+      const res = await Api.post(`v1/payments/generate`, data)
+      return res.data
+    },
+  })
+}
+
+export const DeletePayment = () => {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await Api.delete(`v1/payments/${id}`)
+      return res.data
+    },
+  })
+}
+
+export interface SearchPaymentsResponseItem {
+  id: string;
+  ticketId?: string;
+  reference?: string;
+  amount: number;
+  status: string;
+  channel?: string;
+  createdAt?: string;
+}
+
+export interface SearchPaymentsResponse {
+  items: SearchPaymentsResponseItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export const SearchPayments = () => {
+  return useMutation<SearchPaymentsResponse, unknown, SearchPaymentsPayload>({
+    mutationFn: async (data: SearchPaymentsPayload) => {
+      const res = await Api.post(`v1/payments/search`, data)
+      return res.data
+    },
+  })
+}
