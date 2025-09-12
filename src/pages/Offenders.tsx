@@ -84,10 +84,10 @@ export default function Offenders() {
               {offenders.map((offender: any) => (
                 <TableRow key={offender.id}>
                   <TableCell className="font-medium">{offender.offenderName}</TableCell>
-                  <TableCell className="font-medium">{offender.phoneNumber}</TableCell>
-                  <TableCell className="max-w-[200px] truncate">{offender.address}</TableCell>
-                  <TableCell className='text-center'>{offender.ticketCount}</TableCell>
-                  <TableCell className='text-center'>{offender.totalPoints}</TableCell>
+                  <TableCell className="font-medium">{offender.phoneNumber || "-"}</TableCell>
+                  <TableCell className="max-w-[200px] truncate">{offender.address || "-"}</TableCell>
+                  <TableCell className='text-center'>{offender.ticketCount || "-"}</TableCell>
+                  <TableCell className='text-center'>{offender.totalPoints || "-"}</TableCell>
                   
                   {/* <TableCell className="text-right">
                     <DropdownMenu>

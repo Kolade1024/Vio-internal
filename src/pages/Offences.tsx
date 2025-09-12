@@ -69,11 +69,11 @@ export default function Offences() {
               {data?.map((offender: any) => (
                 <TableRow key={offender.id}>
                   <TableCell className="font-medium">{offender.offenceName}</TableCell>
-                  <TableCell className="font-medium">{offender.code}</TableCell>
-                  <TableCell className="font-medium">{offender.points}</TableCell>
-                  <TableCell className="font-medium">{offender.penalty.toLocaleString()}</TableCell>
-                  <TableCell className="font-medium">{offender.additionalAction}</TableCell>
-                  <TableCell className="font-medium">{offender.subsequentOffenderPrice}</TableCell>
+                  <TableCell className="font-medium">{offender.code  || "-"}</TableCell>
+                  <TableCell className="font-medium">{offender.points  || "-"}</TableCell>
+                  <TableCell className="font-medium">{offender.penalty.toLocaleString()  || "-"}</TableCell>
+                  <TableCell className="font-medium">{offender.additionalAction  || "-"}</TableCell>
+                  <TableCell className="font-medium">{offender.subsequentOffenderPrice  || "-"}</TableCell>
                   <TableCell>
                     <span
                       className={cn(
