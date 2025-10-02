@@ -62,7 +62,7 @@ export default function Offences() {
                 <TableHead>Points</TableHead>
                 <TableHead>Penalty</TableHead>
                 <TableHead>Additional Action</TableHead>
-                <TableHead>Subsequent Offender Price</TableHead>
+                {/* <TableHead>Subsequent Offender Price</TableHead> */}
                 <TableHead>Status</TableHead>
                 {/* <TableHead className="text-right">Actions</TableHead> */}
               </TableRow>
@@ -75,7 +75,7 @@ export default function Offences() {
                   <TableCell className="font-medium">{offender.points || "-"}</TableCell>
                   <TableCell className="font-medium">{offender.penalty.toLocaleString() || "-"}</TableCell>
                   <TableCell className="font-medium">{offender.additionalAction || "-"}</TableCell>
-                  <TableCell className="font-medium">{offender.subsequentOffenderPrice || "-"}</TableCell>
+                  {/* <TableCell className="font-medium">{offender.subsequentOffenderPrice || "-"}</TableCell> */}
                   <TableCell>
                     <span
                       className={cn(
