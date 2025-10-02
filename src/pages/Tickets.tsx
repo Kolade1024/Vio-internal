@@ -2,36 +2,40 @@ import { useEffect, useState } from 'react'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
-import { SearchIcon, RotateCw, Upload, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronDown } from 'lucide-react'
+import { SearchIcon, RotateCw, Upload, ChevronDown } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../components/ui/dropdown-menu'
 import { ComponentLoading } from '@/components/Loading'
 import { SearchTickets } from '@/services/mutation'
+import { Pagination } from '@/components/Pagination'
 
 export default function Tickets() {
   const [search, setSearch] = useState('')
   const [error, __] = useState('')
   const [tickets, setTickets] = useState<any[]>([])
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [total, setTotal] = useState(0)
 
   const { mutate, isPending } = SearchTickets();
 
   useEffect(() => {
     mutate({
       "advancedSearch": null,
-      "keyword": null,
+      "keyword": search || null,
       "advancedFilter": null,
-      "pageNumber": 1,
-      "pageSize": 10,
+      "pageNumber": page,
+      "pageSize": pageSize,
       "orderBy": []
   }, {
-      onSuccess: (res) => {
-        setTickets(res?.items);
+      onSuccess: (res: any) => {
+        setTickets(res?.items || []);
+        setTotal(res?.totalPages || 0)
       },
       onError: (err) => {
         console.log(err);
       }
     })
-  }, [])
+  }, [page, pageSize])
 
   
   if (error) return <div className="text-center text-red-500 py-8">{error}</div>
@@ -49,7 +53,14 @@ export default function Tickets() {
           <p className="text-muted-foreground">Manage all the Tickets in the System.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={() => window.location.reload()} variant="outline">
+          <Button onClick={() => mutate({
+            "advancedSearch": null,
+            "keyword": search || null,
+            "advancedFilter": null,
+            "pageNumber": page,
+            "pageSize": pageSize,
+            "orderBy": []
+          })} variant="outline">
             <RotateCw className="mr-2 h-4 w-4" /> Reload
           </Button>
           <Button className="bg-destructive !text-white text-destructive-foreground hover:bg-destructive/90">
@@ -123,54 +134,14 @@ export default function Tickets() {
         </Table>
       </div>
 
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          1-10 of 17179
-        </div>
-        <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium">Rows per page</p>
-          <Select>
-            <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder="10" />
-            </SelectTrigger>
-            <SelectContent side="top">
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="20">20</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              className="h-8 w-8 p-0"
-            >
-              <ChevronsLeft className="h-4 w-4" />
-              <span className="sr-only">Go to first page</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-8 w-8 p-0"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span className="sr-only">Go to previous page</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-8 w-8 p-0"
-            >
-              <ChevronRight className="h-4 w-4" />
-              <span className="sr-only">Go to next page</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-8 w-8 p-0"
-            >
-              <ChevronsRight className="h-4 w-4" />
-              <span className="sr-only">Go to last page</span>
-            </Button>
-          </div>
-        </div>
-      </div>
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={setPage}
+        onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+        isLoading={isPending}
+      />
     </div>
   )
 }

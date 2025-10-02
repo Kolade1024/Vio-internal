@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
-import { SearchIcon, RotateCw, Upload, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
+import { SearchIcon, RotateCw, Upload } from 'lucide-react'
 import { ComponentLoading } from '@/components/Loading'
 import { getVehicleOwners } from '@/services/query'
+import { Pagination } from '@/components/Pagination'
 
 export default function VehicleOwners() {
     const [search, setSearch] = useState('')
@@ -20,6 +20,8 @@ export default function VehicleOwners() {
       }
 
     const owners = Array.isArray(data) ? data : []
+    const [page, setPage] = useState(1)
+    const [pageSize, setPageSize] = useState(10)
     const normalizedSearch = search.toLowerCase()
     const filteredOwners = owners.filter((owner: any) => {
       const haystack = [
@@ -78,7 +80,7 @@ export default function VehicleOwners() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredOwners?.map((owner: any) => (
+              {filteredOwners.slice((page-1)*pageSize, page*pageSize)?.map((owner: any) => (
                 <TableRow key={owner.id}>
                   <TableCell className="font-medium">{owner.fullName}</TableCell>
                   <TableCell className="font-medium">{owner.nationalIdentificationNumber ?? '-'}</TableCell>
@@ -110,54 +112,14 @@ export default function VehicleOwners() {
           </Table>
         </div>
   
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="flex-1 text-sm text-muted-foreground">
-            1-6 of {filteredOwners?.length}
-          </div>
-          <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Rows per page</p>
-            <Select>
-              <SelectTrigger className="h-8 w-[70px]">
-                <SelectValue placeholder="10" />
-              </SelectTrigger>
-              <SelectContent side="top">
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-              >
-                <ChevronsLeft className="h-4 w-4" />
-                <span className="sr-only">Go to first page</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                <span className="sr-only">Go to previous page</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-              >
-                <ChevronRight className="h-4 w-4" />
-                <span className="sr-only">Go to next page</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-8 w-8 p-0"
-              >
-                <ChevronsRight className="h-4 w-4" />
-                <span className="sr-only">Go to last page</span>
-              </Button>
-            </div>
-          </div>
-        </div>
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          total={filteredOwners.length}
+          onPageChange={setPage}
+          onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+          isLoading={isFetching}
+        />
       </div>
   )
 }

@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "../components/ui/table";
 import { Label } from "../components/ui/label";
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
+import { Pagination } from "@/components/Pagination";
 import {
   SearchIcon,
   PlusIcon,
@@ -43,6 +43,8 @@ export default function Commands() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentCommand, setCurrentCommand] = useState<CommandType | null>(null);
   const [commandName, setCommandName] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const queryClient = useQueryClient();
 
@@ -181,7 +183,7 @@ export default function Commands() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data?.map((command) => (
+            {data?.slice((page - 1) * pageSize, page * pageSize).map((command) => (
               <TableRow key={command.id}>
                 <TableCell className="font-medium">{command.id}</TableCell>
                 <TableCell>{command.name}</TableCell>
@@ -217,6 +219,13 @@ export default function Commands() {
             ))}
           </TableBody>
         </Table>
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          total={data?.length || 0}
+          onPageChange={setPage}
+          onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+        />
       </div>
 
       {/* Edit Command Modal */}

@@ -31,6 +31,7 @@ import { CreateCommandUnits, UpdateCommandUnit, DeleteCommandUnit } from "@/serv
 // import type { CommandUnitPayload } from "@/services/mutation";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { Pagination } from "@/components/Pagination";
 
 export default function CommandUnits() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -39,6 +40,8 @@ export default function CommandUnits() {
   const [currentCommandUnit, setCurrentCommandUnit] = useState<CommandUnitType | null>(null);
   const [commandUnitName, setCommandUnitName] = useState("");
   const [selectedCommandId, setSelectedCommandId] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const queryClient = useQueryClient();
 
@@ -204,7 +207,7 @@ export default function CommandUnits() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {commandUnitsData?.map((commandUnit) => (
+            {commandUnitsData?.slice((page - 1) * pageSize, page * pageSize).map((commandUnit) => (
               <TableRow key={commandUnit.id}>
                 <TableCell className="font-medium">{commandUnit.id.substring(0, 8)}...</TableCell>
                 <TableCell>{commandUnit.name}</TableCell>
@@ -241,6 +244,13 @@ export default function CommandUnits() {
             ))}
           </TableBody>
         </Table>
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          total={commandUnitsData?.length || 0}
+          onPageChange={setPage}
+          onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+        />
       </div>
 
       {/* Edit Command Unit Modal */}

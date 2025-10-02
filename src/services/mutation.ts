@@ -53,6 +53,18 @@ export const CreateTicket = () => {
     })
   }
   
+
+// Generate report
+export const GenerateTicketReport = () => {
+    return useMutation({
+      mutationFn: async (data: any) => {
+        const res = await Api.post(`v1/tickets/generate`, data, {
+            responseType: "blob",
+          })
+        return res.data
+      },
+    })
+  }
   
   // Commands
   export interface CommandPayload {
@@ -146,6 +158,7 @@ export const SearchVehicle = () => {
     },
   })
 }
+
 
 // Payments
 export interface InitiatePaymentPayload {
