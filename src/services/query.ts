@@ -186,6 +186,17 @@ export const getVehicleOwners = () => {
   })
 }
 
+export const getVehicleByPlateNumber = (plateNumber?: string) => {
+  return useQuery({
+    queryKey: ['vehicle-by-plate-number'],
+    queryFn: async () => {
+      const res = await Api.get(`v1/vehicles/${plateNumber}`)
+      return res.data
+    },
+    enabled: false,
+  })
+}
+
 // Users
 export const getUsers = () => {
   return useQuery({

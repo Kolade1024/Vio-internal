@@ -67,7 +67,7 @@ export default function Layout() {
       items: [
         { name: 'Home', icon: HomeIcon, path: '/' },
         { name: 'Commands', icon: TicketIcon, path: '/commands' },
-        { name: 'Command Units', icon: UsersIcon, path: '/command-units' },
+        // { name: 'Command Units', icon: UsersIcon, path: '/command-units' },
       ],
     },
     {

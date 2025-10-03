@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table'
@@ -17,11 +17,37 @@ export default function Offences() {
     const { data, isLoading } = getOffences();
     const [page, setPage] = useState(1)
     const [pageSize, setPageSize] = useState(10)
-  
+
+    // Filter offences based on search input
+    const filteredData = useMemo(() => {
+      if (!data) return []
+      if (!search.trim()) return data
+      const lower = search.trim().toLowerCase()
+      return data.filter((offender: any) =>
+        (offender.offenceName && offender.offenceName.toLowerCase().includes(lower)) ||
+        (offender.code && offender.code.toLowerCase().includes(lower)) ||
+        (offender.additionalAction && offender.additionalAction.toLowerCase().includes(lower)) ||
+        (offender.status && offender.status.toLowerCase().includes(lower)) ||
+        (offender.points && String(offender.points).toLowerCase().includes(lower)) ||
+        (offender.penalty && String(offender.penalty).toLowerCase().includes(lower))
+      )
+    }, [data, search])
+
+    // Reset to first page when search changes
+    // (prevents empty page if current page > filteredData.length)
+    // Only run when search changes
+    // eslint-disable-next-line
+    // useEffect(() => { setPage(1) }, [search])
+    // Instead, do it inline:
+    // If page is out of range, reset to 1
+    if (page > Math.ceil(filteredData.length / pageSize) && filteredData.length > 0) {
+      setPage(1)
+    }
+
     if (isLoading) {
       return <ComponentLoading />
     }
-  
+
     return (
       <div className="flex flex-col gap-4 p-4">
         <div className="flex items-center justify-between">
@@ -38,21 +64,24 @@ export default function Offences() {
             </Button>
           </div>
         </div>
-  
+
         <div className="flex items-center justify-between">
           <div className="relative w-full max-w-sm">
             <Input
               type="text"
-              placeholder="Search for Complaints"
+              placeholder="Search for Offences"
               className="w-full pl-8"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => {
+                setSearch(e.target.value)
+                setPage(1)
+              }}
             />
             <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           </div>
           {/* Add filter dropdowns here */}
         </div>
-  
+
         <div className="border rounded-md">
           <Table>
             <TableHeader>
@@ -68,12 +97,14 @@ export default function Offences() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data?.slice((page-1)*pageSize, page*pageSize).map((offender: any) => (
+              {filteredData
+                .slice((page-1)*pageSize, page*pageSize)
+                .map((offender: any) => (
                 <TableRow key={offender.id}>
                   <TableCell className="font-medium">{offender.offenceName}</TableCell>
                   <TableCell className="font-medium">{offender.code || "-"}</TableCell>
                   <TableCell className="font-medium">{offender.points || "-"}</TableCell>
-                  <TableCell className="font-medium">{offender.penalty.toLocaleString() || "-"}</TableCell>
+                  <TableCell className="font-medium">{offender.penalty?.toLocaleString() || "-"}</TableCell>
                   <TableCell className="font-medium">{offender.additionalAction || "-"}</TableCell>
                   {/* <TableCell className="font-medium">{offender.subsequentOffenderPrice || "-"}</TableCell> */}
                   <TableCell>
@@ -111,11 +142,11 @@ export default function Offences() {
             </TableBody>
           </Table>
         </div>
-  
+
         <Pagination
           page={page}
           pageSize={pageSize}
-          total={data?.length || 0}
+          total={filteredData.length}
           onPageChange={setPage}
           onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
         />

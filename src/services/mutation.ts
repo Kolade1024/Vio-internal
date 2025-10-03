@@ -19,7 +19,7 @@ export interface EvidencePayload {
 export interface CreateTicketPayload {
   vehicleId?: string;
   vehicleOwnerId?: string;
-  commandUnitId: string;
+  commandUnitId?: string;
   vehicleBrand: string;
   vehicleModel: string;
   vehicleColor: string;
@@ -150,6 +150,7 @@ export interface VehiclePayload {
   chasisNumber?: string;
   plateNumber: string;
 }
+
 export const SearchVehicle = () => {
   return useMutation({
     mutationFn: async (data: any) => {
