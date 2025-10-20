@@ -250,6 +250,29 @@ export const DeletePayment = () => {
   })
 }
 
+// Users
+export interface CreateUserPayload {
+  firstName: string;
+  lastName: string;
+  badgeNumber: string;
+  email: string;
+  userName: string;
+  password: string;
+  confirmPassword: string;
+  phoneNumber: string;
+  commandId: string;
+  commandUnitId: string;
+}
+
+export const CreateUser = () => {
+  return useMutation({
+    mutationFn: async (data: CreateUserPayload) => {
+      const res = await Api.post(`api/users/self-register`, data)
+      return res.data
+    },
+  })
+}
+
 export interface SearchPaymentsResponseItem {
   id: string;
   ticketId?: string;
