@@ -23,12 +23,14 @@ export default function Login() {
        useLogin.mutate({email, password}, 
         {
           onSuccess: (data) => {
-            console.log(data)
-            Auth.setRefreshToken(data.refreshToken)
-            Auth.setToken(data.token)
-
-            navigate('/')
-            toast.success("Login Successful");
+            
+            if(data.token) {
+              Auth.setRefreshToken(data.refreshToken)
+              Auth.setToken(data.token)
+              
+              navigate('/')
+              toast.success("Login Successful");
+            }
           },
           onError: (error: any) => {
             const detail = error?.response?.data?.detail || error?.message || 'Login failed';
