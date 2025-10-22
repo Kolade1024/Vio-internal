@@ -284,7 +284,7 @@ export interface CreateUserPayload {
 export const CreateUser = () => {
   return useMutation({
     mutationFn: async (data: CreateUserPayload) => {
-      const res = await Api.post(`api/users/self-register`, data)
+      const res = await Api.post(`users/self-register`, data)
       return res.data
     },
   })

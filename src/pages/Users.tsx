@@ -55,7 +55,7 @@ export default function Users() {
         commandId,
         commandUnitId,
       }
-      const res = await Api.post('api/users/self-register', payload)
+      const res = await Api.post('users/self-register', payload)
       return res.data
     },
     onSuccess: async () => {
