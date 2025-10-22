@@ -31,7 +31,7 @@ export default function Offenders() {
       }, {
           onSuccess: (res: any) => {
             setOffenders(res?.items || []);
-            setTotal(res?.totalPages || 0)
+            setTotal(res?.totalCount || 0)
           },
           onError: (err) => {
             console.log(err);

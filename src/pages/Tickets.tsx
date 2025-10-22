@@ -31,7 +31,7 @@ export default function Tickets() {
   }, {
       onSuccess: (res: any) => {
         setTickets(res?.items || []);
-        setTotal(res?.totalPages || 0)
+        setTotal(res?.totalCount || 0)
       },
       onError: (err) => {
         console.log(err);
