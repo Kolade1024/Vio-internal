@@ -331,7 +331,7 @@ export interface UpdateRolePermissionsPayload {
 export const CreateRole = () => {
   return useMutation({
     mutationFn: async (data: RolePayload) => {
-      const res = await Api.post(`v1/roles`, data)
+      const res = await Api.post(`roles`, data)
       return res.data
     },
   })
@@ -340,7 +340,7 @@ export const CreateRole = () => {
 export const UpdateRole = (id: string) => {
   return useMutation({
     mutationFn: async (data: RolePayload) => {
-      const res = await Api.put(`v1/roles/${id}`, data)
+      const res = await Api.put(`roles/${id}`, data)
       return res.data
     },
   })
@@ -349,7 +349,7 @@ export const UpdateRole = (id: string) => {
 export const DeleteRole = () => {
   return useMutation({
     mutationFn: async (id: string) => {
-      const res = await Api.delete(`v1/roles/${id}`)
+      const res = await Api.delete(`roles/${id}`)
       return res.data
     },
   })
