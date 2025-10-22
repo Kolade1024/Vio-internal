@@ -62,6 +62,15 @@ export const UpdateTicket = (id: string) => {
     })
   }
 
+export const ApplyDiscountToTicket = (id: string) => {
+    return useMutation({
+      mutationFn: async (data: {ticketId: string; discount: number; discountReason: string}) => {
+        const res = await Api.put(`v1/tickets/discount/${id}`, data)
+        return res.data
+      },
+    })
+  }
+
 // Generate report
 export const GenerateTicketReport = () => {
     return useMutation({

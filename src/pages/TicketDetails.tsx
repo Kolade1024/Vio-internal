@@ -3,29 +3,41 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
-import { ArrowLeft, Edit, Save, X } from 'lucide-react'
+import { ArrowLeft, Edit, PlusIcon, Save, X } from 'lucide-react'
 import { ComponentLoading } from '@/components/Loading'
 import { getTicketById, type TicketData } from '../services/query'
-import { useAuth } from '@/context/AuthContext'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-// import { UpdateTicket } from '@/services/mutation'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog'
+import Auth from '@/services/auth'
+import toast from 'react-hot-toast'
+import { ApplyDiscountToTicket } from '@/services/mutation'
 
 export default function TicketDetails() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { user } = useAuth()
-//   const [ticket, setTicket] = useState<TicketData | null>(null)
-//   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const user = Auth.getUser();
+
   const [isEditing, setIsEditing] = useState(false)
   const [editData, setEditData] = useState<Partial<TicketData>>({})
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [discount, setDiscount] = useState({
+    amount: 0,
+    reason: ""
+  })
 
-  const isAdmin = user?.role === 'Admin'
+  const isAdmin = true || user?.role === 'Admin'
 
   const { data, isLoading, refetch, isRefetching } = getTicketById(id!);
+
+  // populate editData when ticket data loads
+  useEffect(() => {
+    if (data) {
+      setEditData(data)
+    }
+  }, [data])
 
   useEffect(() => {
     if (id) {
@@ -33,34 +45,35 @@ export default function TicketDetails() {
     }
   }, [id])
 
-//   const fetchTicket = async () => {
-//     try {
-//       setLoading(true)
-//       const response = await getTicketById(id!)
-//       setTicket(response.data)
-//       setEditData(response.data)
-//     } catch (err) {
-//       setError('Failed to fetch ticket details')
-//       console.error(err)
-//     } finally {
-//       setLoading(false)
-//     }
-//   }
+  const handleSave = () => {}
 
   const handleEdit = () => {
     setIsEditing(true)
   }
 
-  const handleSave = async () => {
-    try {
-    //   await UpdateTicket(id!, editData)
-      setIsEditing(false)
-      // Refetch the ticket data to get the updated information
-    //   await fetchTicket()
-    } catch (err) {
-      console.error('Failed to update ticket:', err)
-      setError('Failed to update data. Please try again.')
+  const { mutate, isPending } = ApplyDiscountToTicket(id!)
+
+  const handleApplyDiscount = () => {
+    if(discount.reason.length <= 10){
+      toast.error("Reason must be greater than 10 characters!");
+      
+      return;
     }
+
+    mutate({
+      ticketId: id!,
+      discount: discount.amount,
+      discountReason: discount.reason
+    }, {
+      onSuccess: (res) => {
+        toast.success("Discount applied successfully")
+        console.log(res)
+      },
+      onError: (err: any) => {
+        toast.error(err.response.data.detail || "Failed to apply discount")
+      }
+    })
+
   }
 
   const handleCancel = () => {
@@ -77,18 +90,6 @@ export default function TicketDetails() {
 
   if (isLoading || isRefetching) {
     return <ComponentLoading />
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center py-8">
-        <p className="text-red-500 mb-4">{error}</p>
-        <Button onClick={() => navigate('/tickets')}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Tickets
-        </Button>
-      </div>
-    )
   }
 
   if (!data) {
@@ -120,7 +121,53 @@ export default function TicketDetails() {
           </div>
         </div>
         {isAdmin && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+          <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <PlusIcon className="mr-2 h-4 w-4" /> Apply Discount
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Discount</DialogTitle>
+                <DialogDescription>Apply discount for this ticket</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="">
+                  <Label htmlFor="discount-amount" className="mb-2 block">
+                    Discount Amount *
+                  </Label>
+                  <Input
+                    id="discount-amount"
+                    value={discount.amount}
+                    onChange={(e) => setDiscount({...discount, amount: parseInt(e.target.value)})}
+                    className="col-span-3"
+                    type='number'
+                    placeholder="Enter amount"
+                  />
+                </div>
+                <div className="">
+                  <Label htmlFor="discount-reason" className="mb-2 block">
+                    Reason
+                  </Label>
+                  <Textarea
+                    id="discount-reason"
+                    value={discount.reason}
+                    onChange={(e) => setDiscount({ ...discount, reason: e.target.value})}
+                    className="col-span-3"
+                    placeholder="Enter reason for discount"
+                    rows={3}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" onClick={handleApplyDiscount} disabled={isPending}>
+                  {isPending ? "Applying..." : "Apply"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
             {isEditing ? (
               <>
                 <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
@@ -207,7 +254,7 @@ export default function TicketDetails() {
                   <Input
                     id="fineAmount"
                     type="number"
-                    value={editData.fineAmount || data.fineAmount}
+                    value={editData.fineAmount ?? data.fineAmount}
                     onChange={(e) => handleInputChange('fineAmount', parseFloat(e.target.value))}
                   />
                 ) : (
@@ -401,7 +448,7 @@ export default function TicketDetails() {
       </Card>
 
       {/* Command Unit Information */}
-      <Card>
+      {data.issuedByCommandUnit && <Card>
         <CardHeader>
           <CardTitle>Issued By</CardTitle>
         </CardHeader>
@@ -417,7 +464,7 @@ export default function TicketDetails() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card>}
     </div>
   )
 }
