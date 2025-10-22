@@ -125,7 +125,7 @@ export default function Tickets() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => navigate(`/tickets/${ticket.id}`)}>View</DropdownMenuItem>
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
+                      {/* <DropdownMenuItem>Edit</DropdownMenuItem> */}
                       <DropdownMenuItem>Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
