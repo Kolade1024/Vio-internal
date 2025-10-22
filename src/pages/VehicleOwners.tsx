@@ -10,6 +10,9 @@ import { Pagination } from '@/components/Pagination'
 export default function VehicleOwners() {
     const [search, setSearch] = useState('')
     const [error, __] = useState('')
+    const [page, setPage] = useState(1)
+    const [pageSize, setPageSize] = useState(10)
+    const normalizedSearch = search.toLowerCase()
 
     if (error) return <div className="text-center text-red-500 py-8">{error}</div>
 
@@ -20,9 +23,6 @@ export default function VehicleOwners() {
       }
 
     const owners = Array.isArray(data) ? data : []
-    const [page, setPage] = useState(1)
-    const [pageSize, setPageSize] = useState(10)
-    const normalizedSearch = search.toLowerCase()
     const filteredOwners = owners.filter((owner: any) => {
       const haystack = [
         owner?.fullName,
