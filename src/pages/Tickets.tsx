@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table'
@@ -9,6 +10,7 @@ import { SearchTickets } from '@/services/mutation'
 import { Pagination } from '@/components/Pagination'
 
 export default function Tickets() {
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [error, __] = useState('')
   const [tickets, setTickets] = useState<any[]>([])
@@ -122,7 +124,7 @@ export default function Tickets() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>View</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate(`/tickets/${ticket.id}`)}>View</DropdownMenuItem>
                       <DropdownMenuItem>Edit</DropdownMenuItem>
                       <DropdownMenuItem>Delete</DropdownMenuItem>
                     </DropdownMenuContent>

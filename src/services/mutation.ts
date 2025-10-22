@@ -52,7 +52,15 @@ export const CreateTicket = () => {
       },
     })
   }
-  
+
+export const UpdateTicket = (id: string) => {
+    return useMutation({
+      mutationFn: async (data: CreateTicketPayload) => {
+        const res = await Api.put(`v1/tickets/${id}`, data)
+        return res.data
+      },
+    })
+  }
 
 // Generate report
 export const GenerateTicketReport = () => {

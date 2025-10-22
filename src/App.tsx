@@ -26,6 +26,7 @@ const Reports = lazy(() => import('./pages/Reports'))
 const SearchTicket = lazy(() => import('./pages/SearchTicket'))
 const CreateTicket = lazy(() => import('./pages/CreateTicket'))
 const CommandUnits = lazy(() => import('./pages/CommandUnits'))
+const TicketDetails = lazy(() => import('./pages/TicketDetails'))
 
 function RequireAuth({ children }: { children: JSX.Element, roles?: string[] }) {
   // const { user } = useAuth()
@@ -75,6 +76,11 @@ useEffect(() => {
           <Route path="create-ticket" element={
             <RequireAuth roles={['Admin', 'Officer', 'Senior Officer', 'Chairman']}>
               <CreateTicket />
+            </RequireAuth>
+          } />
+          <Route path="tickets/:id" element={
+            <RequireAuth roles={['Admin', 'Officer', 'Senior Officer', 'Chairman']}>
+              <TicketDetails />
             </RequireAuth>
           } />
           <Route path="commands" element={

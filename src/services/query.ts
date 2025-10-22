@@ -121,6 +121,78 @@ export interface OffencesType {
   "status": string
 }
 
+export interface TicketData {
+  id: string
+  ticketNumber: string
+  offenceDate: string
+  offenceLocation: string
+  fineAmount: number
+  discountAmount: number
+  totalPoints: number
+  evidence: string
+  ticketStatus: string
+  offender: {
+    id: string
+    offenderName: string
+    email: string
+    phoneNumber: string
+    dateOfBirth: string
+    address: string
+    nationalIdentificationNumber: string
+    licenseNumber: string
+    licenseClass: string
+    licenseStatus: string
+    totalPoints: number
+    ticketCount: number
+  }
+  vehicle: {
+    id: string
+    vehicleOwnerId: string
+    plateNumber: string
+    brand: string
+    model: string
+    color: string
+    year: number
+  }
+  vehicleOwner: {
+    id: string
+    fullName: string
+    nationalIdentificationNumber: string
+    phoneNumber: string
+    email: string
+    address: string
+    totalVehicles: number
+  }
+  issuedByCommandUnit: {
+    id: string
+    name: string
+    command: {
+      id: string
+      name: string
+    }
+  }
+  offences: Array<{
+    id: string
+    offenceName: string
+    code: string
+    points: number
+    penalty: number
+    additionalAction: string
+    subsequentOffenderPrice: number
+    status: string
+  }>
+}
+
+export const getTicketById = (id: string) => {
+  return useQuery<TicketData>({
+    queryKey: ['ticket'], 
+    queryFn: async () => {
+      const res = await Api.get(`v1/tickets/${id}`)
+      return res.data
+    }, enabled: !!id
+  })
+};
+
 export interface CommandType {
   id: string;
   name: string;
