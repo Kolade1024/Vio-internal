@@ -306,3 +306,51 @@ export const SearchPayments = () => {
     },
   })
 }
+
+
+// Roles
+export interface RolePayload {
+  name: string;
+  description?: string;
+  permissions?: string[];
+}
+
+export interface UpdateRolePermissionsPayload {
+  permissions: string[];
+}
+
+export const CreateRole = () => {
+  return useMutation({
+    mutationFn: async (data: RolePayload) => {
+      const res = await Api.post(`v1/roles`, data)
+      return res.data
+    },
+  })
+}
+
+export const UpdateRole = (id: string) => {
+  return useMutation({
+    mutationFn: async (data: RolePayload) => {
+      const res = await Api.put(`v1/roles/${id}`, data)
+      return res.data
+    },
+  })
+}
+
+export const DeleteRole = () => {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await Api.delete(`v1/roles/${id}`)
+      return res.data
+    },
+  })
+}
+
+export const UpdateRolePermissions = (id: string) => {
+  return useMutation({
+    mutationFn: async (data: UpdateRolePermissionsPayload) => {
+      const res = await Api.put(`v1/roles/${id}/permissions`, data)
+      return res.data
+    },
+  })
+}

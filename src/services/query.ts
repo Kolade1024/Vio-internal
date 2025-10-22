@@ -315,3 +315,46 @@ export const getPaymentByTicketId = (ticketId?: string) => {
     enabled: !!ticketId,
   })
 }
+
+
+// Roles
+export interface Role {
+  id: string;
+  name: string;
+  description?: string;
+  permissions?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export const getRoles = () => {
+  return useQuery<Role[]>({
+    queryKey: ['roles'],
+    queryFn: async () => {
+      const res = await Api.get(`roles`)
+      return res.data
+    }
+  })
+}
+
+export const getRoleById = (id?: string) => {
+  return useQuery<Role>({
+    queryKey: ['role', id],
+    queryFn: async () => {
+      const res = await Api.get(`roles/${id}`)
+      return res.data
+    },
+    enabled: !!id,
+  })
+}
+
+export const getRolePermissions = (id?: string) => {
+  return useQuery<string[]>({
+    queryKey: ['role-permissions', id],
+    queryFn: async () => {
+      const res = await Api.get(`roles/${id}/permissions`)
+      return res.data
+    },
+    enabled: !!id,
+  })
+}
