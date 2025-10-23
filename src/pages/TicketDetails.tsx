@@ -415,7 +415,9 @@ export default function TicketDetails() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {data.offences.map((offence) => (
+            {data.offences.length === 0 || !data.offences ? (
+              <p className='py-20 text-center'>No Offences</p>
+            ) : data.offences.map((offence) => (
               <div key={offence.id} className="border rounded-lg p-4">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>

@@ -28,7 +28,7 @@ export default function SearchTicket() {
 
   return (
     <>
-      <div className="flex flex-col gap-4 p-4">
+      <div className="flex flex-col gap-4 md:p-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Search Ticket</h1>

@@ -157,7 +157,7 @@ export default function Dashboard() {
         <div className="flex-1"></div>
         <div className="flex items-center gap-3">
           <select
-            className="w-[300px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
+            className="md:w-[300px] w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
             value={currentUser || ""}
             onChange={(e) => setCurrentUser(e.target.value || null)}
           >
@@ -188,7 +188,7 @@ export default function Dashboard() {
             </>
           )}
           <select
-            className="w-[300px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
+            className="md:w-[300px] w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
           >

@@ -47,6 +47,7 @@ import logo from "../assets/images/oyo-logo.png"
 export default function Layout() {
   const [user, setUser] = useState(Auth.getUser())
   // const [date, setDate] = useState<Date | undefined>(new Date())
+  const [open, setOpen] = useState(false);
 
   const { data, isLoading } = getProfile();
 
@@ -137,7 +138,7 @@ export default function Layout() {
       </div>
       <div className="flex flex-col lg:ml-[280px]">
         <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b bg-gray-100/40 px-6 dark:bg-gray-800/40">
-          <Sheet>
+          <Sheet onOpenChange={setOpen} open={open}>
             <SheetTrigger asChild>
               <Button className="lg:hidden" size="icon" variant="outline">
                 <MenuIcon className="h-6 w-6" />
@@ -149,17 +150,18 @@ export default function Layout() {
                 <img src={logo} alt="VIO Logo" className="h-8 w-8" />
                 <span>VIO</span>
               </Link>
-              <ScrollArea className="grid gap-2 text-lg font-medium h-full w-full pr-4 overflow-y-auto">
+              <ScrollArea className="grid gap-2 text-lg font-medium h-full w-full pr-4 pb-8 overflow-y-auto">
                 {navItems.map((section, sectionIndex) => (
                   <div key={sectionIndex}>
-                    <h4 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-white">
+                    <h4 className="mb-1 mt-5 px-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-white">
                       {section.section}
                     </h4>
                     {section.items.map((item, itemIndex) => (
                       <Link
                         key={itemIndex}
-                        className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-gray-900 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+                        className="mx-[-0.65rem] text-sm flex items-center gap-4 rounded-xl px-3 py-2 text-gray-900 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
                         to={item.path}
+                        onClick={() => setOpen(false)}
                       >
                         <item.icon className="h-5 w-5" />
                         {item.name}

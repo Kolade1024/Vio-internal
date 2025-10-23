@@ -24,8 +24,8 @@ export default function Complaints() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-4 md:p-4">
+      <div className="flex md:items-center justify-between flex-col md:flex-row gap-2">
         <div>
           <h1 className="text-2xl font-bold">Complaints</h1>
           <p className="text-muted-foreground">Manage all the Complaints in the System.</p>
@@ -40,7 +40,7 @@ export default function Complaints() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center md:justify-start justify-end gap-2">
         <div className="relative w-full max-w-sm">
           <Input
             type="text"

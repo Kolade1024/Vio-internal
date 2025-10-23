@@ -112,13 +112,13 @@ export default function Roles() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-4 md:p-4">
+      <div className="flex md:items-center justify-between flex-col md:flex-row gap-2">
         <div>
           <h1 className="text-2xl font-bold">Roles</h1>
           <p className="text-muted-foreground">Manage user roles and permissions.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center md:justify-start justify-end gap-2">
           <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
             <DialogTrigger asChild>
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
