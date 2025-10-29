@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ComponentLoading } from '@/components/Loading'
 import { SearchTickets } from '@/services/mutation'
 import { Pagination } from '@/components/Pagination'
+import toast from 'react-hot-toast'
 
 export default function Tickets() {
   const navigate = useNavigate()
@@ -38,6 +39,36 @@ export default function Tickets() {
       }
     })
   }, [page, pageSize])
+
+  const handleSearch = () => {
+    if (!search) {
+      return toast.error('Please enter a ticket detail')
+    }
+
+    mutate(
+      {
+        advancedSearch: null,
+        keyword: search || null,
+        advancedFilter: null,
+        orderBy: [],
+      },
+      {
+        onSuccess: (res: any) => {
+          if (!res?.items || res?.items.length === 0) {
+            setTickets([])
+            return toast.error('Ticket not found!')
+          }
+
+          setTickets(res?.items || [])
+          toast.success('Ticket(s) found!')
+        },
+        onError: (err) => {
+          console.error(err)
+          toast.error('Search failed')
+        },
+      }
+    )
+  }
 
   
   if (error) return <div className="text-center text-red-500 py-8">{error}</div>
@@ -71,7 +102,7 @@ export default function Tickets() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
         <div className="relative w-full max-w-sm">
           <Input
             type="text"
@@ -82,7 +113,9 @@ export default function Tickets() {
           />
           <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         </div>
-        {/* Add filter dropdowns here */}
+        <Button onClick={handleSearch}>
+            <SearchIcon className="mr-2 h-4 w-4" /> Search
+          </Button>
       </div>
 
       <div className="border rounded-md">
