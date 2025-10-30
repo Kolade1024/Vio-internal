@@ -1,12 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { InitiatePayment, VerifyPayment, SearchPayments, type SearchPaymentsResponseItem } from "@/services/mutation"
+// import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { SearchPayments, type SearchPaymentsResponseItem } from "@/services/mutation"
+import toast from 'react-hot-toast'
 
 export default function Payments() {
   const [query, setQuery] = useState('')
@@ -14,49 +14,82 @@ export default function Payments() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [page, setPage] = useState(1)
-  const [pageSize] = useState(10)
+  const [pageSize, setPageSize] = useState(10)
+  const [payments, setPayments] = useState<SearchPaymentsResponseItem[]>([])
+  const [total, setTotal] = useState(0)
 
   const [selectedPayment, setSelectedPayment] = useState<SearchPaymentsResponseItem | null>(null)
-  const [ticketAmount, setTicketAmount] = useState<string>('')
-  const [channel, setChannel] = useState<string>('')
+  // const [ticketAmount, setTicketAmount] = useState<string>('')
+  // const [channel, setChannel] = useState<string>('')
+  const [viewModalOpen, setViewModalOpen] = useState(false)
 
-  const searchPayments = SearchPayments()
-  const initiatePayment = InitiatePayment()
-  const verifyPayment = VerifyPayment()
+  const { mutate, isPending } = SearchPayments()
+  // const initiatePayment = InitiatePayment()
+  // const verifyPayment = VerifyPayment()
 
-  const onSearch = async () => {
-    await searchPayments.mutateAsync({
+  const fetchPayments = (p = page, ps = pageSize) => {
+    mutate({
       query: query || undefined,
       status: status || undefined,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
-      page,
-      pageSize,
+      page: p,
+      pageSize: ps,
+    }, {
+      onSuccess: (res: any) => {
+        setPayments(res?.items || [])
+        setTotal(res?.totalCount ?? (res?.items?.length ?? 0))
+      },
+      onError: (err) => {
+        console.error(err)
+        toast.error('Failed to load payments')
+      }
     })
   }
 
-  const onInitiate = async () => {
-    if (!selectedPayment?.ticketId) return
-    const amountNum = ticketAmount ? Number(ticketAmount) : selectedPayment.amount
-    if (!amountNum || Number.isNaN(amountNum)) return
-    await initiatePayment.mutateAsync({
-      ticketId: selectedPayment.ticketId,
-      amount: amountNum,
-      channel: channel || undefined,
-    })
-    setSelectedPayment(null)
-    setTicketAmount('')
-    setChannel('')
-    await onSearch()
+  useEffect(() => {
+    fetchPayments()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, pageSize])
+
+  const onSearch = () => {
+    setPage(1)
+    fetchPayments(1, pageSize)
   }
 
-  const onVerify = async (reference?: string) => {
-    if (!reference) return
-    await verifyPayment.mutateAsync({ reference })
-    await onSearch()
-  }
+  // const onInitiate = async () => {
+  //   if (!selectedPayment?.ticketId) return
+  //   const amountNum = ticketAmount ? Number(ticketAmount) : (selectedPayment.amount || 0)
+  //   if (!amountNum || Number.isNaN(amountNum)) return toast.error('Invalid amount')
+  //   try {
+  //     await initiatePayment.mutateAsync({
+  //       ticketId: selectedPayment.ticketId,
+  //       amount: amountNum,
+  //       channel: channel || undefined,
+  //     })
+  //     setSelectedPayment(null)
+  //     setTicketAmount('')
+  //     setChannel('')
+  //     await fetchPayments(page, pageSize)
+  //     toast.success('Initiated')
+  //   } catch {
+  //     toast.error('Initiation failed')
+  //   }
+  // }
 
-  const results = searchPayments.data
+  // const onVerify = async (reference?: string) => {
+  //   if (!reference) return
+  //   try {
+  //     await verifyPayment.mutateAsync({ reference })
+  //     await fetchPayments(page, pageSize)
+  //     toast.success('Verified')
+  //   } catch {
+  //     toast.error('Verification failed')
+  //   }
+  // }
+
+  const startIndex = total === 0 ? 0 : (page - 1) * pageSize + 1
+  const endIndex = Math.min(page * pageSize, total)
 
   return (
     <div className="p-4 space-y-4">
@@ -68,17 +101,17 @@ export default function Payments() {
           </div>
           <div>
             <Label htmlFor="status">Status</Label>
-            <Select value={status ?? ''} onValueChange={(v) => setStatus(v || undefined)}>
-              <SelectTrigger id="status">
-                <SelectValue placeholder="All" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="success">Success</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
-              </SelectContent>
-            </Select>
+            <select
+              id="status"
+              value={status ?? ''}
+              onChange={(e) => setStatus(e.target.value || undefined)}
+              className="w-full border rounded px-2 py-1"
+            >
+              <option value="">All</option>
+              <option value="pending">Pending</option>
+              <option value="success">Success</option>
+              <option value="failed">Failed</option>
+            </select>
           </div>
           <div>
             <Label htmlFor="start">Start date</Label>
@@ -89,8 +122,8 @@ export default function Payments() {
             <Input id="end" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
           </div>
           <div>
-            <Button onClick={onSearch} disabled={searchPayments.isPending} className="w-full">
-              {searchPayments.isPending ? 'Searching…' : 'Search'}
+            <Button onClick={onSearch} disabled={isPending} className="w-full">
+              {isPending ? 'Searching…' : 'Search'}
             </Button>
           </div>
         </div>
@@ -103,7 +136,7 @@ export default function Payments() {
               <TableRow>
                 <TableHead>Reference</TableHead>
                 <TableHead>Ticket</TableHead>
-                <TableHead>Status</TableHead>
+                {/* <TableHead>Status</TableHead> */}
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead>Channel</TableHead>
                 <TableHead>Created</TableHead>
@@ -111,71 +144,134 @@ export default function Payments() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {results?.items?.length ? (
-                results.items.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell>{p.reference || '-'}</TableCell>
-                    <TableCell>{p.ticketId || '-'}</TableCell>
-                    <TableCell className={p.status === 'success' ? 'text-green-600' : p.status === 'failed' ? 'text-red-600' : ''}>{p.status}</TableCell>
-                    <TableCell className="text-right">{Intl.NumberFormat().format(p.amount)}</TableCell>
-                    <TableCell>{p.channel || '-'}</TableCell>
-                    <TableCell>{p.createdAt ? new Date(p.createdAt).toLocaleString() : '-'}</TableCell>
+              {payments?.length ? (
+                payments.map((p: any) => (
+                  <TableRow key={p.id || p.reference || Math.random()}>
+                    <TableCell>{p.paymentReference || '-'}</TableCell>
+                    <TableCell>{p.ticketId.substring(0, 10) || '-'}</TableCell>
+                    {/* <TableCell className={p.ticketStatus === 'issued' ? 'text-green-600' : p.ticketStatus === 'failed' ? 'text-red-600' : ''}>{p.ticketStatus || p.status || '-'}</TableCell> */}
+                    <TableCell className="text-right">{p.amount != null ? Intl.NumberFormat().format(p.amount) : (p.fineAmount != null ? Intl.NumberFormat().format(p.fineAmount) : '-')}</TableCell>
+                    <TableCell>{p.paymentMethod || '-'}</TableCell>
+                    <TableCell>{p.paymentDate ? new Date(p.paymentDate).toLocaleString() : (p.offenceDate ? new Date(p.offenceDate).toLocaleString() : '-')}</TableCell>
                     <TableCell className="space-x-2">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" onClick={() => { setSelectedPayment(p); setTicketAmount(String(p.amount || '')); }}>Initiate</Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Initiate Payment</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-3">
-                            <div>
-                              <Label>Ticket ID</Label>
-                              <Input value={selectedPayment?.ticketId || ''} disabled />
-                            </div>
-                            <div>
-                              <Label>Amount</Label>
-                              <Input type="number" value={ticketAmount} onChange={(e) => setTicketAmount(e.target.value)} />
-                            </div>
-                            <div>
-                              <Label>Channel (optional)</Label>
-                              <Input placeholder="card, transfer…" value={channel} onChange={(e) => setChannel(e.target.value)} />
-                            </div>
-                          </div>
-                          <DialogFooter>
-                            <Button onClick={onInitiate} disabled={initiatePayment.isPending}>
-                              {initiatePayment.isPending ? 'Initiating…' : 'Initiate'}
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-
-                      <Button variant="secondary" size="sm" onClick={() => onVerify(p.reference)} disabled={!p.reference || verifyPayment.isPending}>
-                        {verifyPayment.isPending ? 'Verifying…' : 'Verify'}
+                      <Button variant="outline" size="sm" onClick={() => { setSelectedPayment(p); setViewModalOpen(true); }}>
+                        View
                       </Button>
+
+                      {/* <Button variant="outline" size="sm" onClick={() => { setSelectedPayment(p); setTicketAmount(String(p.amount || p.fineAmount || '')); }}>
+                        Initiate
+                      </Button> */}
+
+                      {/* <Button variant="secondary" size="sm" onClick={() => onVerify(p.reference)} disabled={!p.reference || verifyPayment.isPending}>
+                        {verifyPayment.isPending ? 'Verifying…' : 'Verify'}
+                      </Button> */}
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">{searchPayments.isPending ? 'Loading…' : 'No results'}</TableCell>
+                  <TableCell colSpan={7} className="text-center py-8">{isPending ? 'Loading…' : 'No results'}</TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </div>
 
-        {results?.total ? (
-          <div className="flex items-center justify-between px-4 py-3">
-            <div className="text-sm">Total: {results.total}</div>
-            <div className="space-x-2">
-              <Button variant="outline" size="sm" onClick={() => { setPage(Math.max(1, page - 1)); onSearch(); }} disabled={page <= 1}>Prev</Button>
-              <Button variant="outline" size="sm" onClick={() => { setPage(page + 1); onSearch(); }} disabled={results.items.length < pageSize}>Next</Button>
+        <div className="flex items-center justify-between px-4 py-3 border-t">
+          <div className="text-sm text-muted-foreground">
+            Showing {startIndex}-{endIndex} of {total}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm">Rows per page</span>
+              <select
+                value={pageSize}
+                onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+                className="h-8 w-20 border rounded px-2"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" size="sm" onClick={() => { if (page > 1) { setPage(page - 1); fetchPayments(page - 1, pageSize); } }} disabled={page <= 1}>
+                Prev
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => { if (endIndex < total) { setPage(page + 1); fetchPayments(page + 1, pageSize); } }} disabled={endIndex >= total}>
+                Next
+              </Button>
             </div>
           </div>
-        ) : null}
+        </div>
       </Card>
+
+      {/* Simple view modal */}
+      {viewModalOpen && selectedPayment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black opacity-50" onClick={() => setViewModalOpen(false)} />
+          <div className="relative bg-white dark:bg-gray-800 rounded shadow-lg w-full max-w-2xl p-6 z-10">
+            <div className="flex items-start justify-between">
+              <h3 className="text-xl font-semibold">Payment Details</h3>
+              <button onClick={() => setViewModalOpen(false)} className="text-gray-600 hover:text-gray-900">Close</button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div>
+                <div className="text-sm text-muted-foreground">Reference</div>
+                <div className="font-medium">{selectedPayment.paymentReference || '-'}</div>
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Ticket</div>
+                <div className="font-medium">{selectedPayment.ticketId || '-'}</div>
+              </div>
+
+              {/* <div>
+                <div className="text-sm text-muted-foreground">Status</div>
+                <div className="font-medium">{selectedPayment.ticketStatus || selectedPayment.ticketStatus || '-'}</div>
+              </div> */}
+
+              <div>
+                <div className="text-sm text-muted-foreground">Amount</div>
+                <div className="font-medium">{selectedPayment.amount != null ? Intl.NumberFormat().format(selectedPayment.amount) : '-'}</div>
+              </div>
+
+              <div>
+                <div className="text-sm text-muted-foreground">Channel</div>
+                <div className="font-medium">{selectedPayment.paymentMethod || '-'}</div>
+              </div>
+
+              <div>
+                <div className="text-sm text-muted-foreground">Created</div>
+                <div className="font-medium">{selectedPayment.paymentDate ? new Date(selectedPayment.paymentDate).toLocaleString() : '-'}</div>
+              </div>
+
+              {/* If the payment item carries ticket metadata, show it */}
+              {/* <div className="md:col-span-2">
+                <div className="text-sm text-muted-foreground">Offence Location</div>
+                <div className="font-medium">{selectedPayment.offenceLocation || '-'}</div>
+              </div> */}
+
+              {/* <div className="md:col-span-2">
+                <div className="text-sm text-muted-foreground">Raw data</div>
+                <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-3 rounded max-h-48 overflow-auto">{JSON.stringify(selectedPayment, null, 2)}</pre>
+              </div>*/}
+            </div> 
+
+            <div className="flex justify-end gap-2 mt-4">
+              <button className="px-4 py-2 rounded border" onClick={() => { setViewModalOpen(false); }}>Close</button>
+              {/* <button
+                className="px-4 py-2 rounded bg-primary text-primary-foreground"
+                onClick={() => { setSelectedPayment(selectedPayment); setTicketAmount(String(selectedPayment.amount || selectedPayment.fineAmount || '')); }}
+              >
+                Prepare Initiate
+              </button> */}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

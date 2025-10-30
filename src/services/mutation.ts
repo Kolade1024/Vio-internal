@@ -298,6 +298,9 @@ export interface SearchPaymentsResponseItem {
   status: string;
   channel?: string;
   createdAt?: string;
+  paymentReference?: string;
+  paymentMethod?: string;
+  paymentDate?: string;
 }
 
 export interface SearchPaymentsResponse {
@@ -308,7 +311,7 @@ export interface SearchPaymentsResponse {
 }
 
 export const SearchPayments = () => {
-  return useMutation<SearchPaymentsResponse, unknown, SearchPaymentsPayload>({
+  return useMutation({
     mutationFn: async (data: SearchPaymentsPayload) => {
       const res = await Api.post(`v1/payments/search`, data)
       return res.data
