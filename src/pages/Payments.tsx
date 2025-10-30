@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card"
 // import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { SearchPayments, type SearchPaymentsResponseItem } from "@/services/mutation"
 import toast from 'react-hot-toast'
+import { Pagination } from '@/components/Pagination'
 
 export default function Payments() {
   const [query, setQuery] = useState('')
@@ -88,11 +89,11 @@ export default function Payments() {
   //   }
   // }
 
-  const startIndex = total === 0 ? 0 : (page - 1) * pageSize + 1
-  const endIndex = Math.min(page * pageSize, total)
+  // const startIndex = total === 0 ? 0 : (page - 1) * pageSize + 1
+  // const endIndex = Math.min(page * pageSize, total)
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="space-y-4">
       <Card className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
           <div>
@@ -177,7 +178,7 @@ export default function Payments() {
           </Table>
         </div>
 
-        <div className="flex items-center justify-between px-4 py-3 border-t">
+        {/* <div className="flex items-center justify-between px-4 py-3 border-t">
           <div className="text-sm text-muted-foreground">
             Showing {startIndex}-{endIndex} of {total}
           </div>
@@ -205,7 +206,15 @@ export default function Payments() {
               </Button>
             </div>
           </div>
-        </div>
+        </div> */}
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={setPage}
+          onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+          isLoading={isPending}
+        />
       </Card>
 
       {/* Simple view modal */}
