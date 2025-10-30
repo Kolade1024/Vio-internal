@@ -34,7 +34,7 @@ export default function Payments() {
       status: status || undefined,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
-      page: p,
+      pageNumber: p,
       pageSize: ps,
     }, {
       onSuccess: (res: any) => {

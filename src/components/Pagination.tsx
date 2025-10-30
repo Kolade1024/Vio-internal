@@ -31,11 +31,11 @@ export function Pagination({
   }
 
   return (
-    <div className="flex items-center justify-end gap-2 py-4">
+    <div className="flex items-center justify-end flex-col md:flex-row gap-2 py-4">
       <div className="flex-1 text-sm text-muted-foreground">
         {start}-{end} of {total}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center flex-col md:flex-row gap-2">
         <p className="text-sm font-medium">Rows per page</p>
         <select
           className="h-8 w-[70px] rounded border px-2 text-sm"

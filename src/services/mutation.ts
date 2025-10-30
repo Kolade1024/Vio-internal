@@ -209,7 +209,7 @@ export interface SearchPaymentsPayload {
   status?: string;
   startDate?: string;
   endDate?: string;
-  page?: number;
+  pageNumber?: number;
   pageSize?: number;
 }
 
@@ -306,7 +306,7 @@ export interface SearchPaymentsResponseItem {
 export interface SearchPaymentsResponse {
   items: SearchPaymentsResponseItem[];
   total: number;
-  page: number;
+  pageNumber: number;
   pageSize: number;
 }
 
