@@ -1,62 +1,79 @@
-import { useEffect, useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Card } from "@/components/ui/card"
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Card } from "@/components/ui/card";
 // import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { SearchPayments, type SearchPaymentsResponseItem } from "@/services/mutation"
-import toast from 'react-hot-toast'
-import { Pagination } from '@/components/Pagination'
+import {
+  SearchPayments,
+  type SearchPaymentsResponseItem,
+} from "@/services/mutation";
+import toast from "react-hot-toast";
+import { Pagination } from "@/components/Pagination";
+import { Search } from "lucide-react";
 
 export default function Payments() {
-  const [query, setQuery] = useState('')
-  const [status, setStatus] = useState<string | undefined>(undefined)
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
-  const [payments, setPayments] = useState<SearchPaymentsResponseItem[]>([])
-  const [total, setTotal] = useState(0)
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState<string | undefined>(undefined);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [payments, setPayments] = useState<SearchPaymentsResponseItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [showSearchMobile, setShowSearchMobile] = useState(false);
 
-  const [selectedPayment, setSelectedPayment] = useState<SearchPaymentsResponseItem | null>(null)
+  const [selectedPayment, setSelectedPayment] =
+    useState<SearchPaymentsResponseItem | null>(null);
   // const [ticketAmount, setTicketAmount] = useState<string>('')
   // const [channel, setChannel] = useState<string>('')
-  const [viewModalOpen, setViewModalOpen] = useState(false)
+  const [viewModalOpen, setViewModalOpen] = useState(false);
 
-  const { mutate, isPending } = SearchPayments()
+  const { mutate, isPending } = SearchPayments();
   // const initiatePayment = InitiatePayment()
   // const verifyPayment = VerifyPayment()
 
   const fetchPayments = (p = page, ps = pageSize) => {
-    mutate({
-      query: query || undefined,
-      status: status || undefined,
-      startDate: startDate || undefined,
-      endDate: endDate || undefined,
-      pageNumber: p,
-      pageSize: ps,
-    }, {
-      onSuccess: (res: any) => {
-        setPayments(res?.items || [])
-        setTotal(res?.totalCount ?? (res?.items?.length ?? 0))
+    mutate(
+      {
+        query: query || undefined,
+        status: status || undefined,
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+        pageNumber: p,
+        pageSize: ps,
       },
-      onError: (err) => {
-        console.error(err)
-        toast.error('Failed to load payments')
+      {
+        onSuccess: (res: any) => {
+          console.log(res?.items, p);
+          setPayments(res?.items || []);
+          setTotal(res?.totalCount ?? res?.items?.length ?? 0);
+        },
+        onError: (err) => {
+          console.error(err);
+          toast.error("Failed to load payments");
+        },
       }
-    })
-  }
+    );
+  };
 
   useEffect(() => {
-    fetchPayments()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize])
+    fetchPayments();
+  }, [page, pageSize]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   const onSearch = () => {
-    setPage(1)
-    fetchPayments(1, pageSize)
-  }
+    setPage(1);
+    fetchPayments(1, pageSize);
+  };
 
   // const onInitiate = async () => {
   //   if (!selectedPayment?.ticketId) return
@@ -94,17 +111,29 @@ export default function Payments() {
 
   return (
     <div className="space-y-4">
-      <Card className="p-4">
+      <Button
+        className="md:hidden"
+        onClick={() => setShowSearchMobile(!showSearchMobile)}
+        variant="secondary"
+      >
+        <Search className="text-white" />
+      </Button>
+      <Card className={`${showSearchMobile ? "block" : "hidden"} md:block p-4`}>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
           <div>
             <Label htmlFor="query">Search</Label>
-            <Input id="query" placeholder="Ticket ID or Reference" value={query} onChange={(e) => setQuery(e.target.value)} />
+            <Input
+              id="query"
+              placeholder="Ticket ID or Reference"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
           </div>
           <div>
             <Label htmlFor="status">Status</Label>
             <select
               id="status"
-              value={status ?? ''}
+              value={status ?? ""}
               onChange={(e) => setStatus(e.target.value || undefined)}
               className="w-full border rounded px-2 py-1"
             >
@@ -116,15 +145,25 @@ export default function Payments() {
           </div>
           <div>
             <Label htmlFor="start">Start date</Label>
-            <Input id="start" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            <Input
+              id="start"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
           </div>
           <div>
             <Label htmlFor="end">End date</Label>
-            <Input id="end" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            <Input
+              id="end"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
           </div>
           <div>
             <Button onClick={onSearch} disabled={isPending} className="w-full">
-              {isPending ? 'Searching…' : 'Search'}
+              {isPending ? "Searching…" : "Search"}
             </Button>
           </div>
         </div>
@@ -148,14 +187,33 @@ export default function Payments() {
               {payments?.length ? (
                 payments.map((p: any) => (
                   <TableRow key={p.id || p.reference || Math.random()}>
-                    <TableCell>{p.paymentReference || '-'}</TableCell>
-                    <TableCell>{p.ticketId.substring(0, 10) || '-'}</TableCell>
+                    <TableCell>{p.paymentReference || "-"}</TableCell>
+                    <TableCell>{p.ticketId.substring(0, 10) || "-"}</TableCell>
                     {/* <TableCell className={p.ticketStatus === 'issued' ? 'text-green-600' : p.ticketStatus === 'failed' ? 'text-red-600' : ''}>{p.ticketStatus || p.status || '-'}</TableCell> */}
-                    <TableCell className="text-right">{p.amount != null ? Intl.NumberFormat().format(p.amount) : (p.fineAmount != null ? Intl.NumberFormat().format(p.fineAmount) : '-')}</TableCell>
-                    <TableCell>{p.paymentMethod || '-'}</TableCell>
-                    <TableCell>{p.paymentDate ? new Date(p.paymentDate).toLocaleString() : (p.offenceDate ? new Date(p.offenceDate).toLocaleString() : '-')}</TableCell>
+                    <TableCell className="text-right">
+                      {p.amount != null
+                        ? Intl.NumberFormat().format(p.amount)
+                        : p.fineAmount != null
+                        ? Intl.NumberFormat().format(p.fineAmount)
+                        : "-"}
+                    </TableCell>
+                    <TableCell>{p.paymentMethod || "-"}</TableCell>
+                    <TableCell>
+                      {p.paymentDate
+                        ? new Date(p.paymentDate).toLocaleString()
+                        : p.offenceDate
+                        ? new Date(p.offenceDate).toLocaleString()
+                        : "-"}
+                    </TableCell>
                     <TableCell className="space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => { setSelectedPayment(p); setViewModalOpen(true); }}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedPayment(p);
+                          setViewModalOpen(true);
+                        }}
+                      >
                         View
                       </Button>
 
@@ -171,7 +229,9 @@ export default function Payments() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">{isPending ? 'Loading…' : 'No results'}</TableCell>
+                  <TableCell colSpan={7} className="text-center py-8">
+                    {isPending ? "Loading…" : "No results"}
+                  </TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -212,7 +272,10 @@ export default function Payments() {
           pageSize={pageSize}
           total={total}
           onPageChange={setPage}
-          onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+          onPageSizeChange={(s) => {
+            setPageSize(s);
+            setPage(1);
+          }}
           isLoading={isPending}
         />
       </Card>
@@ -220,21 +283,33 @@ export default function Payments() {
       {/* Simple view modal */}
       {viewModalOpen && selectedPayment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black opacity-50" onClick={() => setViewModalOpen(false)} />
+          <div
+            className="absolute inset-0 bg-black opacity-50"
+            onClick={() => setViewModalOpen(false)}
+          />
           <div className="relative bg-white dark:bg-gray-800 rounded shadow-lg w-full max-w-2xl p-6 z-10">
             <div className="flex items-start justify-between">
               <h3 className="text-xl font-semibold">Payment Details</h3>
-              <button onClick={() => setViewModalOpen(false)} className="text-gray-600 hover:text-gray-900">Close</button>
+              <button
+                onClick={() => setViewModalOpen(false)}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                Close
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
                 <div className="text-sm text-muted-foreground">Reference</div>
-                <div className="font-medium">{selectedPayment.paymentReference || '-'}</div>
+                <div className="font-medium">
+                  {selectedPayment.paymentReference || "-"}
+                </div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Ticket</div>
-                <div className="font-medium">{selectedPayment.ticketId || '-'}</div>
+                <div className="font-medium">
+                  {selectedPayment.ticketId || "-"}
+                </div>
               </div>
 
               {/* <div>
@@ -244,17 +319,27 @@ export default function Payments() {
 
               <div>
                 <div className="text-sm text-muted-foreground">Amount</div>
-                <div className="font-medium">{selectedPayment.amount != null ? Intl.NumberFormat().format(selectedPayment.amount) : '-'}</div>
+                <div className="font-medium">
+                  {selectedPayment.amount != null
+                    ? Intl.NumberFormat().format(selectedPayment.amount)
+                    : "-"}
+                </div>
               </div>
 
               <div>
                 <div className="text-sm text-muted-foreground">Channel</div>
-                <div className="font-medium">{selectedPayment.paymentMethod || '-'}</div>
+                <div className="font-medium">
+                  {selectedPayment.paymentMethod || "-"}
+                </div>
               </div>
 
               <div>
                 <div className="text-sm text-muted-foreground">Created</div>
-                <div className="font-medium">{selectedPayment.paymentDate ? new Date(selectedPayment.paymentDate).toLocaleString() : '-'}</div>
+                <div className="font-medium">
+                  {selectedPayment.paymentDate
+                    ? new Date(selectedPayment.paymentDate).toLocaleString()
+                    : "-"}
+                </div>
               </div>
 
               {/* If the payment item carries ticket metadata, show it */}
@@ -267,10 +352,17 @@ export default function Payments() {
                 <div className="text-sm text-muted-foreground">Raw data</div>
                 <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-3 rounded max-h-48 overflow-auto">{JSON.stringify(selectedPayment, null, 2)}</pre>
               </div>*/}
-            </div> 
+            </div>
 
             <div className="flex justify-end gap-2 mt-4">
-              <button className="px-4 py-2 rounded border" onClick={() => { setViewModalOpen(false); }}>Close</button>
+              <button
+                className="px-4 py-2 rounded border"
+                onClick={() => {
+                  setViewModalOpen(false);
+                }}
+              >
+                Close
+              </button>
               {/* <button
                 className="px-4 py-2 rounded bg-primary text-primary-foreground"
                 onClick={() => { setSelectedPayment(selectedPayment); setTicketAmount(String(selectedPayment.amount || selectedPayment.fineAmount || '')); }}
@@ -282,5 +374,5 @@ export default function Payments() {
         </div>
       )}
     </div>
-  )
+  );
 }
