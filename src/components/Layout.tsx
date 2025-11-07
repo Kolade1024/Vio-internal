@@ -38,7 +38,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@radix-ui/react-scroll-area'
 import Auth from '@/services/auth'
-import { getProfile } from '@/services/query'
+import { getProfile, getUserRoles } from '@/services/query'
 import { useEffect } from 'react'
 import Loading from './Loading'
 
@@ -50,13 +50,15 @@ export default function Layout() {
   const [open, setOpen] = useState(false);
 
   const { data, isLoading } = getProfile();
+  const { data: userRoles, isLoading: isUserRolesLoading } = getUserRoles(user?.id)
 
   useEffect(() => {
     if(data && !isLoading) {
       Auth.setUser(data)
       setUser(Auth.getUser())
+      Auth.setUser({...Auth.getUser(), roles: userRoles?.map((role) => role.roleName || '')})
     }
-  }, [data, isLoading])
+  }, [data, isLoading, isUserRolesLoading])
 
   const handleLogout = () => {
     Auth.logOut()

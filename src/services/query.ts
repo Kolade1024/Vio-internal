@@ -321,6 +321,7 @@ export const getPaymentByTicketId = (ticketId?: string) => {
 export interface Role {
   id: string;
   name: string;
+  roleName?: string;
   description?: string;
   permissions?: string[];
   createdAt?: string;
@@ -356,5 +357,16 @@ export const getRolePermissions = (id?: string) => {
       return res.data
     },
     enabled: !!id,
+  })
+}
+
+export const getUserRoles = (userId?: string) => {
+  return useQuery<Role[]>({
+    queryKey: ['user-roles'],
+    queryFn: async () => {
+      const res = await Api.get(`users/${userId}/roles`)
+      return res.data
+    },
+    enabled: !!userId,
   })
 }
