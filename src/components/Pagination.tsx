@@ -31,7 +31,7 @@ export function Pagination({
   }
 
   return (
-    <div className="flex items-center justify-end flex-col md:flex-row gap-2 py-4">
+    <div className="flex items-center justify-end flex-col md:flex-row gap-2 py-4 px-3">
       <div className="flex-1 text-sm text-muted-foreground">
         {start}-{end} of {total}
       </div>

@@ -234,7 +234,7 @@ export default function Roles() {
                         <EditIcon className="mr-2 h-4 w-4" /> Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        className='text-white'
+                        className='text-[red]'
                         onClick={() => {
                           setCurrentRole(role)
                           setIsDeleteModalOpen(true)
@@ -311,7 +311,7 @@ export default function Roles() {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDeleteRole} disabled={deleteRoleMutation.isPending}>
+            <Button className='text-white' variant="destructive" onClick={handleDeleteRole} disabled={deleteRoleMutation.isPending}>
               {deleteRoleMutation.isPending ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
