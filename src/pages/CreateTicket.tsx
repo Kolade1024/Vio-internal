@@ -11,7 +11,7 @@ import toast from 'react-hot-toast'
 import { getOffences, getCommands, getVehicleByPlateNumber, /*getCommandUnits*/ } from '@/services/query'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel } from '@/components/ui/dropdown-menu'
 import type { CommandType, /*CommandUnitType*/ OffencesType } from '@/services/query'
-
+import { useNavigate } from 'react-router-dom'
 // interface OffencesType {
 //   "id": string,
 //   "offenceName": string,
@@ -24,6 +24,7 @@ import type { CommandType, /*CommandUnitType*/ OffencesType } from '@/services/q
 // }
 
 export default function CreateTicket() {
+  const navigate = useNavigate()
   const [searchPlate, setSearchPlate] = useState('')
   const [vehicleMake, setVehicleMake] = useState('')
   const [vehicleModel, setVehicleModel] = useState('')
@@ -107,8 +108,8 @@ export default function CreateTicket() {
 
   const handleSubmit = async () => {
     // For demonstration purposes, assuming some IDs are hardcoded or fetched elsewhere
-    const vehicleId = "3fa85f64-5717-4562-b3fc-2c963f66afa6"; // Replace with actual ID
-    const vehicleOwnerId = "3fa85f64-5717-4562-b3fc-2c963f66afa6"; // Replace with actual ID
+    // const vehicleId = ""; // Replace with actual ID
+    // const vehicleOwnerId = ""; // Replace with actual ID
 
     let evidencePayload: CreateTicketPayload['evidence'] = undefined;
 
@@ -126,8 +127,8 @@ export default function CreateTicket() {
           };
 
           const payload: CreateTicketPayload = {
-            vehicleId: vehicleId,
-            vehicleOwnerId: vehicleOwnerId,
+            // vehicleId: vehicleId,
+            // vehicleOwnerId: vehicleOwnerId,
             // commandUnitId: commandUnit,
             vehicleBrand: vehicleMake,
             vehicleModel: vehicleModel,
@@ -160,8 +161,8 @@ export default function CreateTicket() {
       reader.readAsDataURL(file);
     } else {
       const payload: CreateTicketPayload = {
-        vehicleId: vehicleId,
-        vehicleOwnerId: vehicleOwnerId,
+        // vehicleId: vehicleId,
+        // vehicleOwnerId: vehicleOwnerId,
         vehicleBrand: vehicleMake,
         vehicleModel: vehicleModel,
         vehicleColor: vehicleColor,
@@ -175,7 +176,17 @@ export default function CreateTicket() {
         offenceLocation: location,
         evidence: undefined,
       };
-      mutate(payload);
+      mutate(payload, {
+        onSuccess: (data) => {
+          toast.success("Ticket created successfully!");
+          console.log(data)
+          navigate('/tickets')
+        },
+        onError: (error) => {
+          console.log(error)
+          toast.error("Failed to create Ticket")
+        }
+      });
     }
   };
 

@@ -20,10 +20,15 @@ export default function SearchTicket() {
 
     mutate(
       {
-        advancedSearch: null,
         keyword: searchItem || null,
         advancedFilter: null,
-        orderBy: [],
+        orderBy: ['offenceDate desc'],
+        pageNumber: 1,
+        pageSize: 10,
+        advancedSearch: {
+          keyword: searchItem || null,
+          fields: ['Vehicle.PlateNumber', 'Offender.PhoneNumber']
+        }
       },
       {
         onSuccess: (res: any) => {

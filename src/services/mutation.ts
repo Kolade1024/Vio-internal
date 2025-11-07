@@ -62,6 +62,15 @@ export const UpdateTicket = (id: string) => {
     })
   }
 
+export const DeleteTicket = () => {
+    return useMutation({
+      mutationFn: async (id: string) => {
+        const res = await Api.delete(`v1/tickets/${id}`)
+        return res.data
+      },
+    })
+  }
+
 export const ApplyDiscountToTicket = (id: string) => {
     return useMutation({
       mutationFn: async (data: {ticketId: string; discount: number; discountReason: string}) => {

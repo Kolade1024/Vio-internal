@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table'
-import { SearchIcon, RotateCw, Upload, ChevronDown } from 'lucide-react'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../components/ui/dropdown-menu'
+import { SearchIcon, RotateCw, Upload } from 'lucide-react'
+// import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../components/ui/dropdown-menu'
 import { ComponentLoading } from '@/components/Loading'
 import { SearchTickets } from '@/services/mutation'
 import { Pagination } from '@/components/Pagination'
 import toast from 'react-hot-toast'
+// import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../components/ui/dialog'
 
 export default function Tickets() {
   const navigate = useNavigate()
@@ -18,8 +19,11 @@ export default function Tickets() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [total, setTotal] = useState(0)
+  // const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  // const [currentTicket, setCurrentTicket] = useState<any>(null)
 
   const { mutate, isPending } = SearchTickets();
+  // const { mutate: deleteTicket, isPending: isDeleting } = DeleteTicket()
 
   useEffect(() => {
     mutate({
@@ -28,7 +32,7 @@ export default function Tickets() {
       "advancedFilter": null,
       "pageNumber": page,
       "pageSize": pageSize,
-      "orderBy": []
+      "orderBy": ['offenceDate desc']
   }, {
       onSuccess: (res: any) => {
         setTickets(res?.items || []);
@@ -41,16 +45,18 @@ export default function Tickets() {
   }, [page, pageSize])
 
   const handleSearch = () => {
-    if (!search) {
-      return toast.error('Please enter a ticket detail')
-    }
+    // if (!search) {
+    //   return toast.error('Please enter a ticket detail')
+    // }
 
     mutate(
       {
         advancedSearch: null,
         keyword: search || null,
         advancedFilter: null,
-        orderBy: [],
+        pageNumber: page,
+        pageSize: pageSize,
+        orderBy: ['offenceDate desc']
       },
       {
         onSuccess: (res: any) => {
@@ -60,7 +66,8 @@ export default function Tickets() {
           }
 
           setTickets(res?.items || [])
-          toast.success('Ticket(s) found!')
+          setTotal(res?.totalCount || 0)
+        toast.success('Ticket(s) found!')
         },
         onError: (err) => {
           console.error(err)
@@ -70,6 +77,26 @@ export default function Tickets() {
     )
   }
 
+  // const handleDelete = (id: string) => {
+  //   deleteTicket(id, {
+  //     onSuccess: () => {
+  //       toast.success('Ticket deleted successfully')
+  //       mutate({
+  //         "advancedSearch": null,
+  //         "keyword": search || null,
+  //         "advancedFilter": null,
+  //         "pageNumber": page,
+  //         "pageSize": pageSize,
+  //         "orderBy": []
+  //       })
+  //       setIsDeleteModalOpen(false)
+  //     },
+  //     onError: (err) => {
+  //       console.error(err)
+  //       toast.error('Failed to delete ticket')
+  //     }
+  //   })
+  // }
   
   if (error) return <div className="text-center text-red-500 py-8">{error}</div>
   // if (!tickets.length) return <div className="text-center py-8 text-gray-500">No tickets found.</div>
@@ -92,7 +119,7 @@ export default function Tickets() {
             "advancedFilter": null,
             "pageNumber": page,
             "pageSize": pageSize,
-            "orderBy": []
+            "orderBy": ['offenceDate desc']
           })} variant="outline">
             <RotateCw className="mr-2 h-4 w-4" /> Reload
           </Button>
@@ -128,7 +155,7 @@ export default function Tickets() {
               <TableHead>Fine Amount</TableHead>
               <TableHead>Total Points</TableHead>
               {/* <TableHead>Status</TableHead> */}
-              <TableHead className="text-right">Actions</TableHead>
+              {/* <TableHead className="text-right">Actions</TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -137,15 +164,15 @@ export default function Tickets() {
                 <TableCell colSpan={7} className="font-medium text-center py-40">No Tickets</TableCell>
               </TableRow>
             ) : tickets.map(ticket => (
-              <TableRow key={ticket.id}>
+              <TableRow key={ticket.id} onClick={() => navigate(`/tickets/${ticket.id}`)} className="cursor-pointer hover:bg-muted">
                 <TableCell className="font-medium">{ticket.id.substring(0, 8)}</TableCell>
                 <TableCell>{ticket.ticketNumber}</TableCell>
                 <TableCell>
                         {new Date(ticket?.offenceDate).toLocaleDateString()}
                 </TableCell>
                 <TableCell>{ticket.fineAmount.toLocaleString()}</TableCell>
-                <TableCell className='text-center'>{ticket.totalPoints}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className=''>{ticket.totalPoints}</TableCell>
+                {/* <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -158,16 +185,33 @@ export default function Tickets() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => navigate(`/tickets/${ticket.id}`)}>View</DropdownMenuItem>
-                      {/* <DropdownMenuItem>Edit</DropdownMenuItem> */}
-                      <DropdownMenuItem>Delete</DropdownMenuItem>
+                      // {/* <DropdownMenuItem>Edit</DropdownMenuItem> 
+                      <DropdownMenuItem onClick={() => { setCurrentTicket(ticket); setIsDeleteModalOpen(true) }}>Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </TableCell>
+                </TableCell> */}
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+
+      {/* <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Delete Ticket</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{currentTicket?.ticketNumber}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+            <Button className='text-white' variant="destructive" onClick={() => handleDelete(currentTicket?.id)} disabled={isDeleting}>
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog> */}
 
       <Pagination
         page={page}

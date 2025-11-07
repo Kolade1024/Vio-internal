@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
-import { ArrowLeft, Edit, PlusIcon, Save, X } from 'lucide-react'
+import { ArrowLeft, Edit, PlusIcon, Save, Trash, X } from 'lucide-react'
 import { ComponentLoading } from '@/components/Loading'
 import { getTicketById, type TicketData } from '../services/query'
 import { Input } from '@/components/ui/input'
@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog'
 import Auth from '@/services/auth'
 import toast from 'react-hot-toast'
-import { ApplyDiscountToTicket } from '@/services/mutation'
+import { ApplyDiscountToTicket, DeleteTicket } from '@/services/mutation'
 
 export default function TicketDetails() {
   const { id } = useParams<{ id: string }>()
@@ -27,8 +27,25 @@ export default function TicketDetails() {
     amount: 0,
     reason: ""
   })
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+      const { mutate: deleteTicket, isPending: isDeleting } = DeleteTicket()
 
-  const isAdmin = true || user?.role === 'Admin'
+      const handleDeleteTicket = () => {
+        deleteTicket(id!, {
+          onSuccess: () => {
+            toast.success('Ticket deleted successfully')
+            navigate('/tickets')
+            setIsDeleteModalOpen(false)
+          },
+            onError: (err) => {
+              console.error(err)
+              toast.error('Failed to delete ticket')
+              setIsDeleteModalOpen(false)
+          }
+          })
+      }
+
+  const isAdmin = user?.roles?.includes('Admin')
 
   const { data, isLoading, refetch, isRefetching } = getTicketById(id!);
 
@@ -467,6 +484,36 @@ export default function TicketDetails() {
           </div>
         </CardContent>
       </Card>}
+
+      {/* button to toggle delete modal */}
+      <div className="flex justify-end"> 
+        {isAdmin && (
+        <Button onClick={() => setIsDeleteModalOpen(true)} className='bg-red-600 hover:bg-red-700'>
+          <Trash className="mr-2 h-4 w-4" />
+          Delete Ticket
+        </Button> 
+        )}
+      </div>
+
+
+
+      {/* Delete Ticket Confirmation Dialog */}
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Delete Ticket</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this ticket? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+            <Button className='text-white' variant="destructive" onClick={handleDeleteTicket} disabled={isDeleting}>
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
