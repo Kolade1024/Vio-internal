@@ -62,6 +62,15 @@ export const UpdateTicket = (id: string) => {
     })
   }
 
+export const DismissTicket = () => {
+    return useMutation({
+      mutationFn: async (data: {id: string; reason: string}) => {
+        const res = await Api.put(`v1/tickets/dismiss/${data.id}`, data)
+        return res.data
+      },
+    })
+  }
+
 export const DeleteTicket = () => {
     return useMutation({
       mutationFn: async (id: string) => {
