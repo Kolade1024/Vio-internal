@@ -141,29 +141,36 @@ export default function Dashboard() {
     })) || [];
 
   const handleGenerateReport = () => {
-    mutate(
-      {},
-      {
-        onSuccess: (res) => {
-          console.log(res);
-          toast.success("Downloading report.");
+    const payload: any = {
+      dateRangeType: dateRange,
+      reportType: "AllTickets",
+    };
 
-          const blob = new Blob([res], {
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          });
+    if (dateRange === "Custom") {
+      payload.startDate = startDate;
+      payload.endDate = endDate;
+    }
 
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = "Report.xlsx";
-          link.click();
-          URL.revokeObjectURL(url);
-        },
-        onError: () => {
-          toast.error("Failed to generate report.");
-        },
-      }
-    );
+    mutate(payload, {
+      onSuccess: (res) => {
+        console.log(res);
+        toast.success("Downloading report.");
+
+        const blob = new Blob([res], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "Report.xlsx";
+        link.click();
+        URL.revokeObjectURL(url);
+      },
+      onError: () => {
+        toast.error("Failed to generate report.");
+      },
+    });
   };
 
   const handleReset = () => {
@@ -173,38 +180,53 @@ export default function Dashboard() {
     setShowCustomDates(false);
   };
 
-  const selectedUserName = usersData?.find((u: any) => u.id === currentUser)?.firstName || "All Users";
+  const selectedUserName =
+    usersData?.find((u: any) => u.id === currentUser)?.firstName || "All Users";
 
   return (
     <div className="flex flex-col gap-4 p-2 md:p-4">
       {/* Enhanced Filters Section */}
       <div className="bg-gradient-to-r from-[#700002] to-[#8B0000] rounded-xl shadow-lg overflow-hidden">
         {/* Filter Header - Toggle on Mobile */}
-        <div 
+        <div
           className="flex items-center justify-between px-4 py-4 md:py-5 cursor-pointer md:cursor-default hover:bg-black/5 md:hover:bg-transparent transition-colors"
           onClick={() => setShowFilters(!showFilters)}
         >
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-white">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v1a1 1 0 01-.22.644l-7 9.5a1 1 0 00-.22.644v5a1 1 0 01-1.447.894l-2-1A1 1 0 016 15.618v-5.07a1 1 0 00-.22-.644l-7-9.5A1 1 0 013 4V3z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M3 3a1 1 0 011-1h12a1 1 0 011 1v1a1 1 0 01-.22.644l-7 9.5a1 1 0 00-.22.644v5a1 1 0 01-1.447.894l-2-1A1 1 0 016 15.618v-5.07a1 1 0 00-.22-.644l-7-9.5A1 1 0 013 4V3z"
+                  clipRule="evenodd"
+                />
               </svg>
-              <h2 className="text-sm md:text-lg font-semibold">Dashboard Filters</h2>
+              <h2 className="text-sm md:text-lg font-semibold">
+                Dashboard Filters
+              </h2>
             </div>
             {/* Active Filters Badge */}
             {(currentUser || dateRange !== "Today") && (
               <span className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
-                {[currentUser && "User", dateRange !== "Today" && "Date"].filter(Boolean).join(", ")}
+                {[currentUser && "User", dateRange !== "Today" && "Date"]
+                  .filter(Boolean)
+                  .join(", ")}
               </span>
             )}
           </div>
-          <ChevronDown 
-            className={`w-5 h-5 text-white transition-transform ${showFilters ? "rotate-180" : ""}`}
+          <ChevronDown
+            className={`w-5 h-5 text-white transition-transform ${
+              showFilters ? "rotate-180" : ""
+            }`}
           />
         </div>
 
         {/* Filter Content */}
-        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showFilters ? "max-h-96 md:max-h-none" : "max-h-0"}`}>
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            showFilters ? "max-h-96 md:max-h-none" : "max-h-0"
+          }`}
+        >
           <div className="px-4 md:px-6 py-4 md:py-5 bg-black/10 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* User Selector */}
@@ -219,21 +241,32 @@ export default function Dashboard() {
                   onChange={(e) => setCurrentUser(e.target.value || null)}
                 >
                   <option value="">All Officers</option>
-                  {usersLoading ? (<option>Loading...</option>) : (
-                  usersData &&
+                  {usersLoading ? (
+                    <option>Loading...</option>
+                  ) : (
+                    usersData &&
                     usersData.map((user: any) => (
                       <option key={user.id} value={user.id}>
                         {user.firstName} {user.lastName}
                       </option>
-                    )))}
+                    ))
+                  )}
                 </select>
               </div>
 
               {/* Date Range Selector */}
               <div className="space-y-2">
                 <label className="text-white text-sm font-medium flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v2h16V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5H4v8a2 2 0 002 2h12a2 2 0 002-2V7h-2v1a1 1 0 11-2 0V7H9v1a1 1 0 11-2 0V7H6v1a1 1 0 11-2 0V7z" clipRule="evenodd" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v2h16V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5H4v8a2 2 0 002 2h12a2 2 0 002-2V7h-2v1a1 1 0 11-2 0V7H9v1a1 1 0 11-2 0V7H6v1a1 1 0 11-2 0V7z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   Date Range
                 </label>
@@ -258,7 +291,9 @@ export default function Dashboard() {
 
               {/* Action Buttons */}
               <div className="space-y-2">
-                <label className="text-white text-sm font-medium block">&nbsp;</label>
+                <label className="text-white text-sm font-medium block">
+                  &nbsp;
+                </label>
                 <div className="flex gap-2 h-full">
                   <Button
                     onClick={handleReset}
@@ -273,7 +308,7 @@ export default function Dashboard() {
                     className="flex-1 bg-white text-[#700002] hover:bg-gray-100 font-medium"
                   >
                     {isGeneratingReport ? (
-                      <RefreshCcw className="w-4 h-4 animate-spin" />
+                      <RefreshCcw className="w-4 h-4 animate-spin mr-2" />
                     ) : (
                       <DownloadIcon className="w-4 h-4 mr-2" />
                     )}
@@ -287,7 +322,9 @@ export default function Dashboard() {
             {dateRange === "Custom" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white/10 rounded-lg border border-white/20">
                 <div className="space-y-2">
-                  <label className="text-white text-sm font-medium">Start Date</label>
+                  <label className="text-white text-sm font-medium">
+                    Start Date
+                  </label>
                   <input
                     type="date"
                     value={startDate}
@@ -296,7 +333,9 @@ export default function Dashboard() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-white text-sm font-medium">End Date</label>
+                  <label className="text-white text-sm font-medium">
+                    End Date
+                  </label>
                   <input
                     type="date"
                     value={endDate}
@@ -326,7 +365,9 @@ export default function Dashboard() {
       {/* Active Filters Display */}
       {(currentUser || dateRange !== "Today") && (
         <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs text-gray-600 dark:text-gray-400">Active:</span>
+          <span className="text-xs text-gray-600 dark:text-gray-400">
+            Active:
+          </span>
           {currentUser && (
             <div className="flex items-center gap-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-xs">
               <Users className="w-3 h-3" />
@@ -342,7 +383,11 @@ export default function Dashboard() {
           {dateRange !== "Today" && (
             <div className="flex items-center gap-2 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-3 py-1 rounded-full text-xs">
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v2h16V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5H4v8a2 2 0 002 2h12a2 2 0 002-2V7h-2v1a1 1 0 11-2 0V7H9v1a1 1 0 11-2 0V7H6v1a1 1 0 11-2 0V7z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v2h16V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5H4v8a2 2 0 002 2h12a2 2 0 002-2V7h-2v1a1 1 0 11-2 0V7H9v1a1 1 0 11-2 0V7H6v1a1 1 0 11-2 0V7z"
+                  clipRule="evenodd"
+                />
               </svg>
               {dateRange}
               <button
@@ -361,47 +406,48 @@ export default function Dashboard() {
 
       {/* Stats Cards Grid */}
       <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {[{
-          title: "Total Tickets",
-          value: data?.totalTickets || 0,
-          icon: (
-            <Ticket className="h-6 w-6 text-blue-500 bg-blue-100 dark:bg-blue-900 rounded-full p-1 shadow" />
-          ),
-          color: "bg-blue-50 dark:bg-blue-950",
-          valueColor: "text-blue-700 dark:text-blue-300",
-          border: "border-blue-200 dark:border-blue-800",
-        },
-        {
-          title: "Total Offenders",
-          value: data?.totalOffenders || 0,
-          icon: (
-            <Users className="h-6 w-6 text-orange-500 bg-orange-100 dark:bg-orange-900 rounded-full p-1 shadow" />
-          ),
-          color: "bg-orange-50 dark:bg-orange-950",
-          valueColor: "text-orange-700 dark:text-orange-300",
-          border: "border-orange-200 dark:border-orange-800",
-        },
-        {
-          title: "Tickets Paid",
-          value: data?.totalTicketsPaid || 0,
-          icon: (
-            <ClipboardCheck className="h-6 w-6 text-green-500 bg-green-100 dark:bg-green-900 rounded-full p-1 shadow" />
-          ),
-          color: "bg-green-50 dark:bg-green-950",
-          valueColor: "text-green-700 dark:text-green-300",
-          border: "border-green-200 dark:border-green-800",
-        },
-        {
-          title: "Tickets Unpaid",
-          value: data?.totalTicketsUnpaid || 0,
-          icon: (
-            <XCircle className="h-6 w-6 text-red-500 bg-red-100 dark:bg-red-900 rounded-full p-1 shadow" />
-          ),
-          color: "bg-red-50 dark:bg-red-950",
-          valueColor: "text-red-700 dark:text-red-300",
-          border: "border-red-200 dark:border-red-800",
-        },
-      ].map((card) => (
+        {[
+          {
+            title: "Total Tickets",
+            value: data?.totalTickets || 0,
+            icon: (
+              <Ticket className="h-6 w-6 text-blue-500 bg-blue-100 dark:bg-blue-900 rounded-full p-1 shadow" />
+            ),
+            color: "bg-blue-50 dark:bg-blue-950",
+            valueColor: "text-blue-700 dark:text-blue-300",
+            border: "border-blue-200 dark:border-blue-800",
+          },
+          {
+            title: "Total Offenders",
+            value: data?.totalOffenders || 0,
+            icon: (
+              <Users className="h-6 w-6 text-orange-500 bg-orange-100 dark:bg-orange-900 rounded-full p-1 shadow" />
+            ),
+            color: "bg-orange-50 dark:bg-orange-950",
+            valueColor: "text-orange-700 dark:text-orange-300",
+            border: "border-orange-200 dark:border-orange-800",
+          },
+          {
+            title: "Tickets Paid",
+            value: data?.totalTicketsPaid || 0,
+            icon: (
+              <ClipboardCheck className="h-6 w-6 text-green-500 bg-green-100 dark:bg-green-900 rounded-full p-1 shadow" />
+            ),
+            color: "bg-green-50 dark:bg-green-950",
+            valueColor: "text-green-700 dark:text-green-300",
+            border: "border-green-200 dark:border-green-800",
+          },
+          {
+            title: "Tickets Unpaid",
+            value: data?.totalTicketsUnpaid || 0,
+            icon: (
+              <XCircle className="h-6 w-6 text-red-500 bg-red-100 dark:bg-red-900 rounded-full p-1 shadow" />
+            ),
+            color: "bg-red-50 dark:bg-red-950",
+            valueColor: "text-red-700 dark:text-red-300",
+            border: "border-red-200 dark:border-red-800",
+          },
+        ].map((card) => (
           <Card
             key={card.title}
             className={`transition-all hover:shadow-lg hover:-translate-y-1 ${card.color} ${card.border} border`}
@@ -427,7 +473,8 @@ export default function Dashboard() {
 
       {/* Secondary Stats */}
       <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {[{
+        {[
+          {
             title: "Total Discounts",
             value: `NGN${data?.totalDiscounts?.toLocaleString() || 0}`,
             icon: (
@@ -459,7 +506,9 @@ export default function Dashboard() {
           },
           {
             title: "Total Fines Unpaid",
-            value: `NGN${data?.totalTicketOutstandingAmount?.toLocaleString() || 0}`,
+            value: `NGN${
+              data?.totalTicketOutstandingAmount?.toLocaleString() || 0
+            }`,
             icon: (
               <DollarSign className="h-6 w-6 text-rose-500 bg-rose-100 dark:bg-rose-900 rounded-full p-1 shadow" />
             ),
