@@ -81,7 +81,6 @@ export const getDashboardStats = (params: DashboardStatsParams = {}) => {
     queryKey: [
       'stats',
       params.userId,
-      params.endDate,
       params.dateRangeType,
     ],
     queryFn: async () => {
