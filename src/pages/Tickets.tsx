@@ -13,7 +13,7 @@ import {
 import { SearchIcon, RotateCw, Upload } from "lucide-react";
 // import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../components/ui/dropdown-menu'
 import { ComponentLoading } from "@/components/Loading";
-import { SearchTickets, DismissTicket } from "@/services/mutation";
+import { SearchTickets, DismissTicket, GenerateTicketReport } from "@/services/mutation";
 import { Pagination } from "@/components/Pagination";
 import toast from "react-hot-toast";
 import Auth from "@/services/auth";
@@ -41,8 +41,15 @@ export default function Tickets() {
   const [isDismissModalOpen, setIsDismissModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<TicketData | null>(null);
 
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportDateRange, setExportDateRange] = useState("Today");
+  const [exportStartDate, setExportStartDate] = useState("");
+  const [exportEndDate, setExportEndDate] = useState("");
+  const [exportReportType, setExportReportType] = useState("AllTickets");
+
   const { mutate, isPending } = SearchTickets();
   const { mutate: dismissTicket, isPending: isDismissing } = DismissTicket();
+  const { mutate: generateReport, isPending: isGeneratingReport } = GenerateTicketReport();
 
   const isAdmin = user?.roles?.includes("Admin");
 
@@ -124,6 +131,42 @@ export default function Tickets() {
     );
   };
 
+  const handleExport = () => {
+    const payload: any = {
+      dateRangeType: exportDateRange,
+      reportType: exportReportType,
+    };
+
+    if (exportDateRange === "Custom") {
+      if (!exportStartDate || !exportEndDate) {
+        toast.error("Please select both start and end dates");
+        return;
+      }
+      payload.startDate = exportStartDate;
+      payload.endDate = exportEndDate;
+    }
+
+    generateReport(payload, {
+      onSuccess: (res) => {
+        toast.success("Downloading report.");
+        const blob = new Blob([res], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `Tickets_Report_${exportDateRange}.xlsx`;
+        link.click();
+        URL.revokeObjectURL(url);
+        setIsExportModalOpen(false);
+      },
+      onError: (err) => {
+        console.error(err);
+        toast.error("Failed to generate report.");
+      },
+    });
+  };
+
   if (error)
     return <div className="text-center text-red-500 py-8">{error}</div>;
   if (isPending) {
@@ -155,7 +198,10 @@ export default function Tickets() {
           >
             <RotateCw className="mr-2 h-4 w-4" /> Reload
           </Button>
-          <Button className="bg-destructive !text-white text-destructive-foreground hover:bg-destructive/90">
+          <Button
+            className="bg-destructive !text-white text-destructive-foreground hover:bg-destructive/90"
+            onClick={() => setIsExportModalOpen(true)}
+          >
             <Upload className="mr-2 h-4 w-4" /> Export
           </Button>
         </div>
@@ -325,6 +371,94 @@ export default function Tickets() {
               disabled={isDismissing}
             >
               {isDismissing ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isExportModalOpen} onOpenChange={setIsExportModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Export Tickets</DialogTitle>
+            <DialogDescription>
+              Select the parameters for the tickets report you want to generate.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">Report Type</label>
+              <select
+                className="w-full px-3 py-2 border rounded-md"
+                value={exportReportType}
+                onChange={(e) => setExportReportType(e.target.value)}
+              >
+                <option value="AllTickets">All Tickets</option>
+                <option value="UnpaidTickets">Unpaid Tickets</option>
+                <option value="PaidTickets">Paid Tickets</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">Date Range</label>
+              <select
+                className="w-full px-3 py-2 border rounded-md"
+                value={exportDateRange}
+                onChange={(e) => setExportDateRange(e.target.value)}
+              >
+                <option value="Today">Today</option>
+                <option value="Yesterday">Yesterday</option>
+                <option value="Weekly">This Week</option>
+                <option value="Monthly">This Month</option>
+                <option value="Quarterly">Quarterly</option>
+                <option value="BiAnnually">Bi-Annually</option>
+                <option value="Annually">Annually</option>
+                <option value="Custom">Custom</option>
+              </select>
+            </div>
+
+            {exportDateRange === "Custom" && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium">Start Date</label>
+                  <input
+                    type="date"
+                    className="w-full px-3 py-2 border rounded-md"
+                    value={exportStartDate}
+                    onChange={(e) => setExportStartDate(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium">End Date</label>
+                  <input
+                    type="date"
+                    className="w-full px-3 py-2 border rounded-md"
+                    value={exportEndDate}
+                    onChange={(e) => setExportEndDate(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsExportModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-destructive !text-white"
+              onClick={handleExport}
+              disabled={isGeneratingReport}
+            >
+              {isGeneratingReport ? (
+                <RotateCw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4 mr-2" />
+              )}
+              {isGeneratingReport ? "Generating..." : "Export"}
             </Button>
           </DialogFooter>
         </DialogContent>
