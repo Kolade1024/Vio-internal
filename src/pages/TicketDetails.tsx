@@ -28,22 +28,22 @@ export default function TicketDetails() {
     reason: ""
   })
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-      const { mutate: deleteTicket, isPending: isDeleting } = DeleteTicket()
+  const { mutate: deleteTicket, isPending: isDeleting } = DeleteTicket()
 
-      const handleDeleteTicket = () => {
-        deleteTicket(id!, {
-          onSuccess: () => {
-            toast.success('Ticket deleted successfully')
-            navigate('/tickets')
-            setIsDeleteModalOpen(false)
-          },
-            onError: (err) => {
-              console.error(err)
-              toast.error('Failed to delete ticket')
-              setIsDeleteModalOpen(false)
-          }
-          })
+  const handleDeleteTicket = () => {
+    deleteTicket(id!, {
+      onSuccess: () => {
+        toast.success('Ticket deleted successfully')
+        navigate('/tickets')
+        setIsDeleteModalOpen(false)
+      },
+      onError: (err) => {
+        console.error(err)
+        toast.error('Failed to delete ticket')
+        setIsDeleteModalOpen(false)
       }
+    })
+  }
 
   const isAdmin = user?.roles?.includes('Admin')
 
@@ -62,7 +62,7 @@ export default function TicketDetails() {
     }
   }, [id])
 
-  const handleSave = () => {}
+  const handleSave = () => { }
 
   const handleEdit = () => {
     setIsEditing(true)
@@ -71,9 +71,9 @@ export default function TicketDetails() {
   const { mutate, isPending } = ApplyDiscountToTicket(id!)
 
   const handleApplyDiscount = () => {
-    if(discount.reason.length <= 10){
+    if (discount.reason.length <= 10) {
       toast.error("Reason must be greater than 10 characters!");
-      
+
       return;
     }
 
@@ -139,52 +139,52 @@ export default function TicketDetails() {
         </div>
         {isAdmin && (
           <div className="flex gap-2 items-center">
-          <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                <PlusIcon className="mr-2 h-4 w-4" /> Apply Discount
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Discount</DialogTitle>
-                <DialogDescription>Apply discount for this ticket</DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="">
-                  <Label htmlFor="discount-amount" className="mb-2 block">
-                    Discount Amount *
-                  </Label>
-                  <Input
-                    id="discount-amount"
-                    value={discount.amount}
-                    onChange={(e) => setDiscount({...discount, amount: parseInt(e.target.value)})}
-                    className="col-span-3"
-                    type='number'
-                    placeholder="Enter amount"
-                  />
-                </div>
-                <div className="">
-                  <Label htmlFor="discount-reason" className="mb-2 block">
-                    Reason
-                  </Label>
-                  <Textarea
-                    id="discount-reason"
-                    value={discount.reason}
-                    onChange={(e) => setDiscount({ ...discount, reason: e.target.value})}
-                    className="col-span-3"
-                    placeholder="Enter reason for discount"
-                    rows={3}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="button" onClick={handleApplyDiscount} disabled={isPending}>
-                  {isPending ? "Applying..." : "Apply"}
+            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <PlusIcon className="mr-2 h-4 w-4" /> Apply Discount
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Discount</DialogTitle>
+                  <DialogDescription>Apply discount for this ticket</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="">
+                    <Label htmlFor="discount-amount" className="mb-2 block">
+                      Discount Amount *
+                    </Label>
+                    <Input
+                      id="discount-amount"
+                      value={discount.amount}
+                      onChange={(e) => setDiscount({ ...discount, amount: parseInt(e.target.value) })}
+                      className="col-span-3"
+                      type='number'
+                      placeholder="Enter amount"
+                    />
+                  </div>
+                  <div className="">
+                    <Label htmlFor="discount-reason" className="mb-2 block">
+                      Reason
+                    </Label>
+                    <Textarea
+                      id="discount-reason"
+                      value={discount.reason}
+                      onChange={(e) => setDiscount({ ...discount, reason: e.target.value })}
+                      className="col-span-3"
+                      placeholder="Enter reason for discount"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="button" onClick={handleApplyDiscount} disabled={isPending}>
+                    {isPending ? "Applying..." : "Apply"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
             {isEditing ? (
               <>
                 <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
@@ -250,7 +250,7 @@ export default function TicketDetails() {
                 )}
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="font-semibold" htmlFor="offenceDate">Offence Date</Label>
@@ -275,7 +275,12 @@ export default function TicketDetails() {
                     onChange={(e) => handleInputChange('fineAmount', parseFloat(e.target.value))}
                   />
                 ) : (
-                  <p className="text-sm font-medium">₦{data.fineAmount.toLocaleString()}</p>
+                  <p className="text-sm font-medium">
+                    ₦{(data.discountAmount && data.discountAmount > 0
+                      ? data.discountAmount
+                      : data.fineAmount ?? 0
+                    ).toLocaleString()}
+                  </p>
                 )}
               </div>
             </div>
@@ -324,7 +329,7 @@ export default function TicketDetails() {
                 <p className="text-sm">{data.offender.email}</p>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="font-semibold">Phone Number</Label>
@@ -370,7 +375,7 @@ export default function TicketDetails() {
                 <p className="text-sm">{data.vehicle.brand}</p>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="font-semibold">Model</Label>
@@ -405,7 +410,7 @@ export default function TicketDetails() {
                 <p className="text-sm">{data.vehicleOwner.email}</p>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="font-semibold">Phone Number</Label>
@@ -486,12 +491,12 @@ export default function TicketDetails() {
       </Card>}
 
       {/* button to toggle delete modal */}
-      <div className="flex justify-end"> 
+      <div className="flex justify-end">
         {isAdmin && (
-        <Button onClick={() => setIsDeleteModalOpen(true)} className='bg-red-600 hover:bg-red-700'>
-          <Trash className="mr-2 h-4 w-4" />
-          Delete Ticket
-        </Button> 
+          <Button onClick={() => setIsDeleteModalOpen(true)} className='bg-red-600 hover:bg-red-700'>
+            <Trash className="mr-2 h-4 w-4" />
+            Delete Ticket
+          </Button>
         )}
       </div>
 

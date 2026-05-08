@@ -48,6 +48,7 @@ import { getDashboardStats, getUsers } from "@/services/query";
 import { ComponentLoading } from "@/components/Loading";
 import { useEffect, useState } from "react";
 import { GenerateTicketReport } from "@/services/mutation";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
@@ -215,17 +216,15 @@ export default function Dashboard() {
             )}
           </div>
           <ChevronDown
-            className={`w-5 h-5 text-white transition-transform ${
-              showFilters ? "rotate-180" : ""
-            }`}
+            className={`w-5 h-5 text-white transition-transform ${showFilters ? "rotate-180" : ""
+              }`}
           />
         </div>
 
         {/* Filter Content */}
         <div
-          className={`overflow-hidden transition-all duration-300 ease-in-out ${
-            showFilters ? "max-h-96 md:max-h-none" : "max-h-0"
-          }`}
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${showFilters ? "max-h-96 md:max-h-none" : "max-h-0"
+            }`}
         >
           <div className="px-4 md:px-6 py-4 md:py-5 bg-black/10 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -284,7 +283,7 @@ export default function Dashboard() {
                   <option value="Monthly">This Month</option>
                   <option value="Quarterly">Quarterly</option>
                   <option value="Annually">Annually</option>
-                  <option value="Biannually">Biannually</option>
+                  <option value="BiAnnually">Biannually</option>
                   <option value="Custom">Custom Range</option>
                 </select>
               </div>
@@ -325,22 +324,22 @@ export default function Dashboard() {
                   <label className="text-white text-sm font-medium">
                     Start Date
                   </label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full border-2 border-white/30 rounded-lg px-3 py-2.5 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-sm font-medium"
+                    onChange={setStartDate}
+                    placeholder="Select start date"
+                    className="bg-white text-gray-900 border-2 border-white/30 hover:border-white/50"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-white text-sm font-medium">
                     End Date
                   </label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full border-2 border-white/30 rounded-lg px-3 py-2.5 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-sm font-medium"
+                    onChange={setEndDate}
+                    placeholder="Select end date"
+                    className="bg-white text-gray-900 border-2 border-white/30 hover:border-white/50"
                   />
                 </div>
                 {!startDate || !endDate ? (
@@ -506,9 +505,8 @@ export default function Dashboard() {
           },
           {
             title: "Total Fines Unpaid",
-            value: `NGN${
-              data?.totalTicketOutstandingAmount?.toLocaleString() || 0
-            }`,
+            value: `NGN${data?.totalTicketOutstandingAmount?.toLocaleString() || 0
+              }`,
             icon: (
               <DollarSign className="h-6 w-6 text-rose-500 bg-rose-100 dark:bg-rose-900 rounded-full p-1 shadow" />
             ),

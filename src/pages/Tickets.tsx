@@ -25,6 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
+import { DatePicker } from "../components/ui/date-picker";
 import type { TicketData } from "@/services/query";
 
 export default function Tickets() {
@@ -421,20 +422,18 @@ export default function Tickets() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <label className="text-sm font-medium">Start Date</label>
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 border rounded-md"
+                  <DatePicker
                     value={exportStartDate}
-                    onChange={(e) => setExportStartDate(e.target.value)}
+                    onChange={setExportStartDate}
+                    placeholder="Select start date"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-sm font-medium">End Date</label>
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 border rounded-md"
+                  <DatePicker
                     value={exportEndDate}
-                    onChange={(e) => setExportEndDate(e.target.value)}
+                    onChange={setExportEndDate}
+                    placeholder="Select end date"
                   />
                 </div>
               </div>
