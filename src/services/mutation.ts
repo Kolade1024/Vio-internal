@@ -53,14 +53,55 @@ export const CreateTicket = () => {
     })
   }
 
+export interface UpdateTicketPayload {
+  id?: string;
+  offenderId?: string;
+  offenderName?: string;
+  email?: string;
+  phoneNumber?: string;
+  dateOfBirth?: string;
+  address?: string;
+  nationalIdentificationNumber?: string;
+  licenseNumber?: string;
+  licenseClass?: string;
+  licenseStatus?: string;
+  vehicleId?: string;
+  plateNumber?: string;
+  brand?: string;
+  model?: string;
+  color?: string;
+  year?: number;
+  chasisNumber?: string;
+  commandId?: string;
+  vehicleOwnerId?: string;
+  isOffenderVehicleOwner?: boolean;
+  vehicleOwnerName?: string;
+  vehicleOwnerEmail?: string;
+  vehicleOwnerPhoneNumber?: string;
+  vehicleOwnerNationalIdentificationNumber?: string;
+  vehicleOwnerAddress?: string;
+  offenceLocation?: string;
+  fineAmount?: number;
+  totalPoints?: number;
+  ticketStatus?: string;
+  files?: {
+    files: Array<{
+      name: string;
+      extension: string;
+      data: string;
+    }>;
+  };
+}
+
 export const UpdateTicket = (id: string) => {
     return useMutation({
-      mutationFn: async (data: CreateTicketPayload) => {
+      mutationFn: async (data: UpdateTicketPayload) => {
         const res = await Api.put(`v1/tickets/${id}`, data)
         return res.data
       },
     })
   }
+
 
 export const DismissTicket = () => {
     return useMutation({

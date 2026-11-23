@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog'
 import Auth from '@/services/auth'
 import toast from 'react-hot-toast'
-import { ApplyDiscountToTicket, DeleteTicket } from '@/services/mutation'
+import { ApplyDiscountToTicket, DeleteTicket, UpdateTicket } from '@/services/mutation'
 
 export default function TicketDetails() {
   const { id } = useParams<{ id: string }>()
@@ -21,7 +21,7 @@ export default function TicketDetails() {
   const user = Auth.getUser();
 
   const [isEditing, setIsEditing] = useState(false)
-  const [editData, setEditData] = useState<Partial<TicketData>>({})
+  const [editData, setEditData] = useState<Partial<TicketData> & { isOffenderVehicleOwner?: boolean }>({})
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [discount, setDiscount] = useState({
     amount: 0,
@@ -29,6 +29,7 @@ export default function TicketDetails() {
   })
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const { mutate: deleteTicket, isPending: isDeleting } = DeleteTicket()
+  const { mutate: updateTicket, isPending: isUpdating } = UpdateTicket(id!)
 
   const handleDeleteTicket = () => {
     deleteTicket(id!, {
@@ -52,7 +53,10 @@ export default function TicketDetails() {
   // populate editData when ticket data loads
   useEffect(() => {
     if (data) {
-      setEditData(data)
+      setEditData({
+        ...data,
+        isOffenderVehicleOwner: data.offender?.id === data.vehicleOwner?.id
+      })
     }
   }, [data])
 
@@ -62,7 +66,60 @@ export default function TicketDetails() {
     }
   }, [id])
 
-  const handleSave = () => { }
+  const handleSave = () => {
+    if (!data) return;
+
+    const isOwner = editData.isOffenderVehicleOwner ?? (editData.offender?.id === editData.vehicleOwner?.id);
+
+    const payload = {
+      id: id!,
+      offenderId: editData.offender?.id || data.offender?.id,
+      offenderName: editData.offender?.offenderName || data.offender?.offenderName,
+      email: editData.offender?.email || data.offender?.email,
+      phoneNumber: editData.offender?.phoneNumber || data.offender?.phoneNumber,
+      dateOfBirth: editData.offender?.dateOfBirth || data.offender?.dateOfBirth,
+      address: editData.offender?.address || data.offender?.address,
+      nationalIdentificationNumber: editData.offender?.nationalIdentificationNumber || data.offender?.nationalIdentificationNumber,
+      licenseNumber: editData.offender?.licenseNumber || data.offender?.licenseNumber,
+      licenseClass: editData.offender?.licenseClass || data.offender?.licenseClass || 'None',
+      licenseStatus: editData.offender?.licenseStatus || data.offender?.licenseStatus || 'None',
+      
+      vehicleId: editData.vehicle?.id || data.vehicle?.id,
+      plateNumber: editData.vehicle?.plateNumber || data.vehicle?.plateNumber,
+      brand: editData.vehicle?.brand || data.vehicle?.brand,
+      model: editData.vehicle?.model || data.vehicle?.model,
+      color: editData.vehicle?.color || data.vehicle?.color,
+      year: editData.vehicle?.year !== undefined ? Number(editData.vehicle.year) : (data.vehicle?.year || 0),
+      chasisNumber: editData.vehicle?.chasisNumber || data.vehicle?.chasisNumber || '',
+      
+      commandId: data.issuedByCommandUnit?.command?.id || data.issuedByCommandUnit?.id || undefined,
+      
+      vehicleOwnerId: editData.vehicleOwner?.id || data.vehicleOwner?.id,
+      isOffenderVehicleOwner: isOwner,
+      vehicleOwnerName: isOwner ? (editData.offender?.offenderName || data.offender?.offenderName) : (editData.vehicleOwner?.fullName || data.vehicleOwner?.fullName),
+      vehicleOwnerEmail: isOwner ? (editData.offender?.email || data.offender?.email) : (editData.vehicleOwner?.email || data.vehicleOwner?.email),
+      vehicleOwnerPhoneNumber: isOwner ? (editData.offender?.phoneNumber || data.offender?.phoneNumber) : (editData.vehicleOwner?.phoneNumber || data.vehicleOwner?.phoneNumber),
+      vehicleOwnerNationalIdentificationNumber: isOwner ? (editData.offender?.nationalIdentificationNumber || data.offender?.nationalIdentificationNumber) : (editData.vehicleOwner?.nationalIdentificationNumber || data.vehicleOwner?.nationalIdentificationNumber),
+      vehicleOwnerAddress: isOwner ? (editData.offender?.address || data.offender?.address) : (editData.vehicleOwner?.address || data.vehicleOwner?.address),
+      
+      offenceLocation: editData.offenceLocation || data.offenceLocation,
+      fineAmount: editData.fineAmount ?? data.fineAmount,
+      totalPoints: editData.totalPoints ?? data.totalPoints ?? 0,
+      ticketStatus: editData.ticketStatus || data.ticketStatus,
+    };
+
+    updateTicket(payload, {
+      onSuccess: () => {
+        toast.success('Ticket updated successfully');
+        setIsEditing(false);
+        refetch();
+      },
+      onError: (err: any) => {
+        console.error(err);
+        toast.error(err.response?.data?.detail || 'Failed to update ticket');
+      }
+    });
+  }
 
   const handleEdit = () => {
     setIsEditing(true)
@@ -95,13 +152,28 @@ export default function TicketDetails() {
 
   const handleCancel = () => {
     setIsEditing(false)
-    setEditData(data || {})
+    if (data) {
+      setEditData({
+        ...data,
+        isOffenderVehicleOwner: data.offender?.id === data.vehicleOwner?.id
+      })
+    }
   }
 
   const handleInputChange = (field: string, value: any) => {
     setEditData(prev => ({
       ...prev,
       [field]: value
+    }))
+  }
+
+  const handleNestedInputChange = (parent: 'offender' | 'vehicle' | 'vehicleOwner', field: string, value: any) => {
+    setEditData(prev => ({
+      ...prev,
+      [parent]: {
+        ...(prev[parent] as any),
+        [field]: value
+      }
     }))
   }
 
@@ -187,9 +259,9 @@ export default function TicketDetails() {
             </Dialog>
             {isEditing ? (
               <>
-                <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
+                <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700" disabled={isUpdating}>
                   <Save className="mr-2 h-4 w-4" />
-                  Save Changes
+                  {isUpdating ? "Saving..." : "Save Changes"}
                 </Button>
                 <Button variant="outline" onClick={handleCancel}>
                   <X className="mr-2 h-4 w-4" />
@@ -215,16 +287,8 @@ export default function TicketDetails() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="font-semibold" htmlFor="ticketNumber">Ticket Number</Label>
-                {isEditing ? (
-                  <Input
-                    id="ticketNumber"
-                    value={editData.ticketNumber || ''}
-                    onChange={(e) => handleInputChange('ticketNumber', e.target.value)}
-                  />
-                ) : (
-                  <p className="text-sm font-medium">{data.ticketNumber}</p>
-                )}
+                <Label className="font-semibold">Ticket Number</Label>
+                <p className="text-sm font-medium">{data.ticketNumber}</p>
               </div>
               <div>
                 <Label className="font-semibold block" htmlFor="ticketStatus">Status</Label>
@@ -253,17 +317,8 @@ export default function TicketDetails() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="font-semibold" htmlFor="offenceDate">Offence Date</Label>
-                {isEditing ? (
-                  <Input
-                    id="offenceDate"
-                    type="datetime-local"
-                    value={editData.offenceDate ? new Date(editData.offenceDate).toISOString().slice(0, 16) : ''}
-                    onChange={(e) => handleInputChange('offenceDate', e.target.value)}
-                  />
-                ) : (
-                  <p className="text-sm">{new Date(data.offenceDate).toLocaleString()}</p>
-                )}
+                <Label className="font-semibold">Offence Date</Label>
+                <p className="text-sm">{new Date(data.offenceDate).toLocaleString()}</p>
               </div>
               <div>
                 <Label className="font-semibold" htmlFor="fineAmount">Fine Amount</Label>
@@ -321,35 +376,165 @@ export default function TicketDetails() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="font-semibold">Name</Label>
-                <p className="text-sm font-medium">{data.offender.offenderName}</p>
+                <Label className="font-semibold" htmlFor="offenderName">Name</Label>
+                {isEditing ? (
+                  <Input
+                    id="offenderName"
+                    value={editData.offender?.offenderName || ''}
+                    onChange={(e) => handleNestedInputChange('offender', 'offenderName', e.target.value)}
+                  />
+                ) : (
+                  <p className="text-sm font-medium">{data.offender.offenderName}</p>
+                )}
               </div>
               <div>
-                <Label className="font-semibold">Email</Label>
-                <p className="text-sm">{data.offender.email}</p>
+                <Label className="font-semibold" htmlFor="offenderEmail">Email</Label>
+                {isEditing ? (
+                  <Input
+                    id="offenderEmail"
+                    type="email"
+                    value={editData.offender?.email || ''}
+                    onChange={(e) => handleNestedInputChange('offender', 'email', e.target.value)}
+                  />
+                ) : (
+                  <p className="text-sm">{data.offender.email}</p>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="font-semibold">Phone Number</Label>
-                <p className="text-sm">{data.offender.phoneNumber}</p>
+                <Label className="font-semibold" htmlFor="offenderPhone">Phone Number</Label>
+                {isEditing ? (
+                  <Input
+                    id="offenderPhone"
+                    value={editData.offender?.phoneNumber || ''}
+                    onChange={(e) => handleNestedInputChange('offender', 'phoneNumber', e.target.value)}
+                  />
+                ) : (
+                  <p className="text-sm">{data.offender.phoneNumber}</p>
+                )}
               </div>
               <div>
-                <Label className="font-semibold">License Number</Label>
-                <p className="text-sm">{data.offender.licenseNumber}</p>
+                <Label className="font-semibold" htmlFor="licenseNumber">License Number</Label>
+                {isEditing ? (
+                  <Input
+                    id="licenseNumber"
+                    value={editData.offender?.licenseNumber || ''}
+                    onChange={(e) => handleNestedInputChange('offender', 'licenseNumber', e.target.value)}
+                  />
+                ) : (
+                  <p className="text-sm">{data.offender.licenseNumber}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="font-semibold" htmlFor="dateOfBirth">Date of Birth</Label>
+                {isEditing ? (
+                  <Input
+                    id="dateOfBirth"
+                    type="date"
+                    value={editData.offender?.dateOfBirth ? editData.offender.dateOfBirth.slice(0, 10) : ''}
+                    onChange={(e) => handleNestedInputChange('offender', 'dateOfBirth', e.target.value)}
+                  />
+                ) : (
+                  <p className="text-sm">{data.offender.dateOfBirth ? new Date(data.offender.dateOfBirth).toLocaleDateString() : 'N/A'}</p>
+                )}
+              </div>
+              <div>
+                <Label className="font-semibold" htmlFor="offenderNIN">NIN</Label>
+                {isEditing ? (
+                  <Input
+                    id="offenderNIN"
+                    value={editData.offender?.nationalIdentificationNumber || ''}
+                    onChange={(e) => handleNestedInputChange('offender', 'nationalIdentificationNumber', e.target.value)}
+                  />
+                ) : (
+                  <p className="text-sm">{data.offender.nationalIdentificationNumber || 'N/A'}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="font-semibold block" htmlFor="licenseClass">License Class</Label>
+                {isEditing ? (
+                  <Select
+                    value={editData.offender?.licenseClass || 'None'}
+                    onValueChange={(value) => handleNestedInputChange('offender', 'licenseClass', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="None">None</SelectItem>
+                      <SelectItem value="A">A</SelectItem>
+                      <SelectItem value="B">B</SelectItem>
+                      <SelectItem value="C">C</SelectItem>
+                      <SelectItem value="D">D</SelectItem>
+                      <SelectItem value="E">E</SelectItem>
+                      <SelectItem value="F">F</SelectItem>
+                      <SelectItem value="G">G</SelectItem>
+                      <SelectItem value="H">H</SelectItem>
+                      <SelectItem value="J">J</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-sm">{data.offender.licenseClass || 'None'}</p>
+                )}
+              </div>
+              <div>
+                <Label className="font-semibold block" htmlFor="licenseStatus">License Status</Label>
+                {isEditing ? (
+                  <Select
+                    value={editData.offender?.licenseStatus || 'None'}
+                    onValueChange={(value) => handleNestedInputChange('offender', 'licenseStatus', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="None">None</SelectItem>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Expired">Expired</SelectItem>
+                      <SelectItem value="Suspended">Suspended</SelectItem>
+                      <SelectItem value="Revoked">Revoked</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-sm">{data.offender.licenseStatus || 'None'}</p>
+                )}
               </div>
             </div>
 
             <div>
-              <Label className="font-semibold">Address</Label>
-              <p className="text-sm">{data.offender.address}</p>
+              <Label className="font-semibold" htmlFor="offenderAddress">Address</Label>
+              {isEditing ? (
+                <Input
+                  id="offenderAddress"
+                  value={editData.offender?.address || ''}
+                  onChange={(e) => handleNestedInputChange('offender', 'address', e.target.value)}
+                />
+              ) : (
+                <p className="text-sm">{data.offender.address}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="font-semibold">Total Points</Label>
-                <p className="text-sm font-medium">{data.offender.totalPoints}</p>
+                <Label className="font-semibold" htmlFor="totalPoints">Total Points</Label>
+                {isEditing ? (
+                  <Input
+                    id="totalPoints"
+                    type="number"
+                    value={editData.totalPoints ?? data.totalPoints ?? 0}
+                    onChange={(e) => handleInputChange('totalPoints', parseInt(e.target.value))}
+                  />
+                ) : (
+                  <p className="text-sm font-medium">{data.offender.totalPoints}</p>
+                )}
               </div>
               <div>
                 <Label className="font-semibold">Ticket Count</Label>
@@ -367,65 +552,191 @@ export default function TicketDetails() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="font-semibold">Plate Number</Label>
-                <p className="text-sm font-medium">{data.vehicle.plateNumber}</p>
+                <Label className="font-semibold" htmlFor="vehiclePlate">Plate Number</Label>
+                {isEditing ? (
+                  <Input
+                    id="vehiclePlate"
+                    value={editData.vehicle?.plateNumber || ''}
+                    onChange={(e) => handleNestedInputChange('vehicle', 'plateNumber', e.target.value)}
+                  />
+                ) : (
+                  <p className="text-sm font-medium">{data.vehicle.plateNumber}</p>
+                )}
               </div>
               <div>
-                <Label className="font-semibold">Brand</Label>
-                <p className="text-sm">{data.vehicle.brand}</p>
+                <Label className="font-semibold" htmlFor="vehicleBrand">Brand</Label>
+                {isEditing ? (
+                  <Input
+                    id="vehicleBrand"
+                    value={editData.vehicle?.brand || ''}
+                    onChange={(e) => handleNestedInputChange('vehicle', 'brand', e.target.value)}
+                  />
+                ) : (
+                  <p className="text-sm">{data.vehicle.brand}</p>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="font-semibold">Model</Label>
-                <p className="text-sm">{data.vehicle.model}</p>
+                <Label className="font-semibold" htmlFor="vehicleModel">Model</Label>
+                {isEditing ? (
+                  <Input
+                    id="vehicleModel"
+                    value={editData.vehicle?.model || ''}
+                    onChange={(e) => handleNestedInputChange('vehicle', 'model', e.target.value)}
+                  />
+                ) : (
+                  <p className="text-sm">{data.vehicle.model}</p>
+                )}
               </div>
               <div>
-                <Label className="font-semibold">Color</Label>
-                <p className="text-sm">{data.vehicle.color}</p>
+                <Label className="font-semibold" htmlFor="vehicleColor">Color</Label>
+                {isEditing ? (
+                  <Input
+                    id="vehicleColor"
+                    value={editData.vehicle?.color || ''}
+                    onChange={(e) => handleNestedInputChange('vehicle', 'color', e.target.value)}
+                  />
+                ) : (
+                  <p className="text-sm">{data.vehicle.color}</p>
+                )}
               </div>
             </div>
 
-            <div>
-              <Label className="font-semibold">Year</Label>
-              <p className="text-sm">{data.vehicle.year}</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="font-semibold" htmlFor="vehicleYear">Year</Label>
+                {isEditing ? (
+                  <Input
+                    id="vehicleYear"
+                    type="number"
+                    value={editData.vehicle?.year || ''}
+                    onChange={(e) => handleNestedInputChange('vehicle', 'year', parseInt(e.target.value))}
+                  />
+                ) : (
+                  <p className="text-sm">{data.vehicle.year}</p>
+                )}
+              </div>
+              <div>
+                <Label className="font-semibold" htmlFor="chasisNumber">Chasis Number</Label>
+                {isEditing ? (
+                  <Input
+                    id="chasisNumber"
+                    value={editData.vehicle?.chasisNumber || ''}
+                    onChange={(e) => handleNestedInputChange('vehicle', 'chasisNumber', e.target.value)}
+                  />
+                ) : (
+                  <p className="text-sm">{data.vehicle.chasisNumber || 'N/A'}</p>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Vehicle Owner Information */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle>Vehicle Owner Information</CardTitle>
+            {isEditing && (
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isOffenderVehicleOwner"
+                  className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+                  checked={!!editData.isOffenderVehicleOwner}
+                  onChange={(e) => setEditData(prev => ({ ...prev, isOffenderVehicleOwner: e.target.checked }))}
+                />
+                <Label htmlFor="isOffenderVehicleOwner" className="text-sm cursor-pointer select-none">
+                  Offender is the Vehicle Owner
+                </Label>
+              </div>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="font-semibold">Full Name</Label>
-                <p className="text-sm font-medium">{data.vehicleOwner.fullName}</p>
-              </div>
-              <div>
-                <Label className="font-semibold">Email</Label>
-                <p className="text-sm">{data.vehicleOwner.email}</p>
-              </div>
-            </div>
+            {editData.isOffenderVehicleOwner ? (
+              <p className="text-sm text-muted-foreground italic py-4">
+                Vehicle owner is the offender. Owner details will automatically be saved using the offender's profile information.
+              </p>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="font-semibold" htmlFor="ownerName">Full Name</Label>
+                    {isEditing ? (
+                      <Input
+                        id="ownerName"
+                        value={editData.vehicleOwner?.fullName || ''}
+                        onChange={(e) => handleNestedInputChange('vehicleOwner', 'fullName', e.target.value)}
+                      />
+                    ) : (
+                      <p className="text-sm font-medium">{data.vehicleOwner.fullName}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="font-semibold" htmlFor="ownerEmail">Email</Label>
+                    {isEditing ? (
+                      <Input
+                        id="ownerEmail"
+                        type="email"
+                        value={editData.vehicleOwner?.email || ''}
+                        onChange={(e) => handleNestedInputChange('vehicleOwner', 'email', e.target.value)}
+                      />
+                    ) : (
+                      <p className="text-sm">{data.vehicleOwner.email}</p>
+                    )}
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="font-semibold">Phone Number</Label>
-                <p className="text-sm">{data.vehicleOwner.phoneNumber}</p>
-              </div>
-              <div>
-                <Label className="font-semibold">Total Vehicles</Label>
-                <p className="text-sm">{data.vehicleOwner.totalVehicles}</p>
-              </div>
-            </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="font-semibold" htmlFor="ownerPhone">Phone Number</Label>
+                    {isEditing ? (
+                      <Input
+                        id="ownerPhone"
+                        value={editData.vehicleOwner?.phoneNumber || ''}
+                        onChange={(e) => handleNestedInputChange('vehicleOwner', 'phoneNumber', e.target.value)}
+                      />
+                    ) : (
+                      <p className="text-sm">{data.vehicleOwner.phoneNumber}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="font-semibold" htmlFor="ownerNIN">NIN</Label>
+                    {isEditing ? (
+                      <Input
+                        id="ownerNIN"
+                        value={editData.vehicleOwner?.nationalIdentificationNumber || ''}
+                        onChange={(e) => handleNestedInputChange('vehicleOwner', 'nationalIdentificationNumber', e.target.value)}
+                      />
+                    ) : (
+                      <p className="text-sm">{data.vehicleOwner.nationalIdentificationNumber || 'N/A'}</p>
+                    )}
+                  </div>
+                </div>
 
-            <div>
-              <Label className="font-semibold">Address</Label>
-              <p className="text-sm">{data.vehicleOwner.address}</p>
-            </div>
+                <div>
+                  <Label className="font-semibold" htmlFor="ownerAddress">Address</Label>
+                  {isEditing ? (
+                    <Input
+                      id="ownerAddress"
+                      value={editData.vehicleOwner?.address || ''}
+                      onChange={(e) => handleNestedInputChange('vehicleOwner', 'address', e.target.value)}
+                    />
+                  ) : (
+                    <p className="text-sm">{data.vehicleOwner.address}</p>
+                  )}
+                </div>
+              </>
+            )}
+            {!isEditing && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="font-semibold">Total Vehicles</Label>
+                  <p className="text-sm">{data.vehicleOwner.totalVehicles}</p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -480,11 +791,11 @@ export default function TicketDetails() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label className="font-semibold">Command Unit</Label>
-              {/* <p className="text-sm font-medium">{data?.issuedByCommandUnit.name}</p> */}
+              <p className="text-sm font-medium">{data.issuedByCommandUnit.name}</p>
             </div>
             <div>
               <Label className="font-semibold">Command</Label>
-              {/* <p className="text-sm">{data.issuedByCommandUnit.command.name}</p> */}
+              <p className="text-sm">{data.issuedByCommandUnit.command?.name}</p>
             </div>
           </div>
         </CardContent>

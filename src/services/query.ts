@@ -3,14 +3,14 @@ import Api from "./api";
 
 // Profile
 export const getProfile = () => {
-    return useQuery({
-      queryKey: ['profile'], 
-      queryFn: async () => {
-        const res = await Api.get(`users/profile`)
-        return res.data
-      },
-    })
-  };
+  return useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const res = await Api.get(`users/profile`)
+      return res.data
+    },
+  })
+};
 
 
 export interface TicketByDayOfWeek {
@@ -101,7 +101,7 @@ export const getDashboardStats = (params: DashboardStatsParams = {}) => {
 // Tickets
 export const getOffences = () => {
   return useQuery<OffencesType[]>({
-    queryKey: ['offences'], 
+    queryKey: ['offences'],
     queryFn: async () => {
       const res = await Api.get(`v1/offences`)
       return res.data
@@ -144,6 +144,7 @@ export interface TicketData {
     totalPoints: number
     ticketCount: number
   }
+
   vehicle: {
     id: string
     vehicleOwnerId: string
@@ -152,6 +153,7 @@ export interface TicketData {
     model: string
     color: string
     year: number
+    chasisNumber?: string
   }
   vehicleOwner: {
     id: string
@@ -162,6 +164,7 @@ export interface TicketData {
     address: string
     totalVehicles: number
   }
+  isOffenderVehicleOwner?: boolean
   issuedByCommandUnit: {
     id: string
     name: string
@@ -184,7 +187,7 @@ export interface TicketData {
 
 export const getTicketById = (id: string) => {
   return useQuery<TicketData>({
-    queryKey: ['ticket'], 
+    queryKey: ['ticket'],
     queryFn: async () => {
       const res = await Api.get(`v1/tickets/${id}`)
       return res.data
@@ -204,7 +207,7 @@ export interface CommandUnitType {
 }
 
 export const getCommands = () => {
-  return useQuery<CommandType[]> ({
+  return useQuery<CommandType[]>({
     queryKey: ['commands'],
     queryFn: async () => {
       const res = await Api.get(`v1/commands`)
@@ -214,7 +217,7 @@ export const getCommands = () => {
 };
 
 export const getCommandUnits = (commandId?: string) => {
-  return useQuery<CommandUnitType[]> ({
+  return useQuery<CommandUnitType[]>({
     queryKey: ['commandUnits', commandId],
     queryFn: async () => {
       const res = await Api.get(`v1/command-units${commandId ? `?commandId=${commandId}` : ''}`)
@@ -225,14 +228,14 @@ export const getCommandUnits = (commandId?: string) => {
 };
 
 export const getTickets = () => {
-    return useQuery({
-      queryKey: ['ticket'], 
-      queryFn: async () => {
-        const res = await Api.get(`v1/tickets`)
-        return res.data
-      },
-    })
-  };
+  return useQuery({
+    queryKey: ['ticket'],
+    queryFn: async () => {
+      const res = await Api.get(`v1/tickets`)
+      return res.data
+    },
+  })
+};
 
 
 // Complaints
